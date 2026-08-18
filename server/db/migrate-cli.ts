@@ -4,7 +4,8 @@ import { createPool } from "./pool.js";
 
 async function main(): Promise<void> {
   const config = loadConfig(process.env);
-  const pool = createPool(config.databaseUrl);
+  const migrationDatabaseUrl = process.env.MIGRATION_DATABASE_URL ?? config.databaseUrl;
+  const pool = createPool(migrationDatabaseUrl, { max: 1 });
 
   try {
     await runMigrations(pool);

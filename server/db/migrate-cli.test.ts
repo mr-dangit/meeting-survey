@@ -6,6 +6,7 @@ const env = {
   ...process.env,
   NODE_ENV: "test",
   DATABASE_URL: "postgresql://127.0.0.1:1/meeting_feedback",
+  MIGRATION_DATABASE_URL: "postgresql://127.0.0.1:2/meeting_feedback",
   ADMIN_PASSPHRASE: "test-admin-passphrase",
   SESSION_SECRET: "test-session-secret-at-least-32-characters"
 };
@@ -26,7 +27,7 @@ function runPnpm(args: string[]) {
 
 describe("migration CLI package script", () => {
   it(
-    "runs the emitted migration CLI before attempting its database connection",
+    "runs the emitted migration CLI with the dedicated migration connection",
     () => {
       const build = runPnpm(["build"]);
       expect(build.status, build.stderr).toBe(0);
@@ -36,6 +37,7 @@ describe("migration CLI package script", () => {
 
       expect(migrate.status).not.toBe(0);
       expect(output).toContain("ECONNREFUSED");
+      expect(output).toContain("127.0.0.1:2");
     },
     60_000
   );
