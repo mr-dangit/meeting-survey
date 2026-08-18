@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently -k \"vite --host 127.0.0.1\" \"tsx watch server/index.ts\"",
     "build": "vite build && tsup server/index.ts server/db/migrate-cli.ts --format esm --out-dir dist/server --sourcemap --clean",
-    "migrate": "node dist/server/migrate-cli.js",
+    "migrate": "node dist/server/db/migrate-cli.js",
     "start": "node dist/server/index.js",
     "test": "vitest run",
     "test:watch": "vitest"
