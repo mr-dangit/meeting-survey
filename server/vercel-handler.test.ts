@@ -23,4 +23,20 @@ describe("createVercelHandler", () => {
     expect(emit).toHaveBeenNthCalledWith(1, "request", firstRequest, firstResponse);
     expect(emit).toHaveBeenNthCalledWith(2, "request", secondRequest, secondResponse);
   });
+
+  it("restores the original API path supplied by the Vercel wildcard rewrite", async () => {
+    const emit = vi.fn();
+    const app = {
+      ready: vi.fn().mockResolvedValue(undefined),
+      server: { emit }
+    } as unknown as FastifyInstance;
+    const handler = createVercelHandler(async () => app);
+    const request = { url: "/api/server?path=admin%2Fsession" } as IncomingMessage;
+    const response = {} as ServerResponse;
+
+    await handler(request, response);
+
+    expect(request.url).toBe("/api/admin/session");
+    expect(emit).toHaveBeenCalledWith("request", request, response);
+  });
 });

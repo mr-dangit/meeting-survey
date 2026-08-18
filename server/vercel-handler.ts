@@ -10,6 +10,20 @@ async function loadProductionApp(): Promise<FastifyInstance> {
   return buildRuntime(config, pool);
 }
 
+function restoreRewrittenApiPath(request: IncomingMessage): void {
+  if (!request.url) return;
+
+  const url = new URL(request.url, "http://localhost");
+  if (url.pathname !== "/api/server") return;
+
+  const path = url.searchParams.get("path");
+  if (!path) return;
+
+  url.searchParams.delete("path");
+  const query = url.searchParams.toString();
+  request.url = `/api/${path.replace(/^\/+/, "")}${query ? `?${query}` : ""}`;
+}
+
 export function createVercelHandler(
   loadApp: () => Promise<FastifyInstance> = loadProductionApp
 ): (request: IncomingMessage, response: ServerResponse) => Promise<void> {
@@ -21,6 +35,7 @@ export function createVercelHandler(
       return app;
     });
     const app = await appPromise;
+    restoreRewrittenApiPath(request);
     app.server.emit("request", request, response);
   };
 }

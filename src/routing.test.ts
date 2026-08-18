@@ -3,6 +3,7 @@ import { parseHashRoute } from "./routing";
 
 describe("hash routing", () => {
   it("keeps access values in the fragment", () => {
+    expect(parseHashRoute("")).toEqual({ kind: "admin" });
     expect(parseHashRoute("#/admin")).toEqual({ kind: "admin" });
     expect(parseHashRoute("#/survey/a%2Fb")).toEqual({ kind: "survey", access: "a/b" });
     expect(parseHashRoute("#/report/chair-secret")).toEqual({ kind: "report", access: "chair-secret" });

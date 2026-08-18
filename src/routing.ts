@@ -5,6 +5,8 @@ export type HashRoute =
   | { kind: "not_found" };
 
 export function parseHashRoute(hash: string): HashRoute {
+  if (hash === "" || hash === "#" || hash === "#/") return { kind: "admin" };
+
   const [kind, encoded, ...rest] = hash.replace(/^#\/?/, "").split("/");
   if (kind === "admin" && !encoded) return { kind: "admin" };
   if ((kind === "survey" || kind === "report") && encoded && rest.length === 0) {
