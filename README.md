@@ -1,6 +1,6 @@
 # Dymon Meeting Feedback Prototype
 
-A self-contained localhost prototype for an anonymous post-meeting feedback survey and a chair-facing demo report.
+A self-contained prototype for an anonymous post-meeting feedback survey, a chair-facing report, and a historical meeting-series dashboard.
 
 ## Setup and run
 
@@ -11,7 +11,7 @@ pnpm install
 pnpm dev -- --host 127.0.0.1
 ```
 
-Open the localhost URL printed by Vite for the attendee survey. The chair report demo is available directly at `http://localhost:5173/?view=report`; it is intentionally not exposed as a survey control.
+Open the localhost URL printed by Vite for the attendee survey. The chair report demo is available at `http://localhost:5173/?view=report`, and the historical series dashboard at `http://localhost:5173/?view=series`; both are intentionally absent from the attendee survey controls.
 
 ## Verify
 
@@ -24,4 +24,4 @@ The test suite covers required-rating validation, the submitted-answer receipt, 
 
 ## Scope
 
-The chair report is populated with fictional demo data. This prototype has no Outlook/calendar automation, backend persistence, authentication, respondent identification, or external integrations. Feedback is presented as anonymous and the meeting title/context is intentionally left as a neutral placeholder.
+The report surfaces are populated only with fictional demo data. This prototype has no Outlook/calendar automation, export flow, authentication, respondent identification, or production analytics. Feedback is presented as anonymous and the attendee survey keeps neutral placeholder context.

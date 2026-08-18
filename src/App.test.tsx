@@ -87,4 +87,50 @@ describe("meeting feedback prototype", () => {
       window.history.replaceState({}, "", originalUrl);
     }
   });
+
+  it("shows the historical series dashboard from its demo URL", () => {
+    const originalUrl = window.location.href;
+    window.history.pushState({}, "", "/?view=series");
+
+    try {
+      render(<App />);
+
+      expect(screen.getByRole("heading", { name: "Investment Committee" })).toBeInTheDocument();
+      expect(screen.getByText("Six-meeting history")).toBeInTheDocument();
+      expect(screen.getByText("Rolling 3-meeting average")).toBeInTheDocument();
+      expect(screen.getByText("+0.2 vs previous")).toBeInTheDocument();
+      expect(screen.getAllByRole("row")).toHaveLength(7);
+    } finally {
+      window.history.replaceState({}, "", originalUrl);
+    }
+  });
+
+  it("compares all three survey questions across the series", () => {
+    const originalUrl = window.location.href;
+    window.history.pushState({}, "", "/?view=series");
+
+    try {
+      render(<App />);
+
+      expect(screen.getByRole("heading", { name: "Question trends" })).toBeInTheDocument();
+      expect(document.querySelectorAll(".question-trend-row")).toHaveLength(3);
+      expect(screen.getByText("Response count & rate")).toBeInTheDocument();
+    } finally {
+      window.history.replaceState({}, "", originalUrl);
+    }
+  });
+
+  it("links a historical occurrence to its detailed chair report", () => {
+    const originalUrl = window.location.href;
+    window.history.pushState({}, "", "/?view=series");
+
+    try {
+      render(<App />);
+
+      const latestReportLink = screen.getByRole("link", { name: "View 12 Aug report" });
+      expect(latestReportLink).toHaveAttribute("href", "/?view=report&occurrence=2026-08-12");
+    } finally {
+      window.history.replaceState({}, "", originalUrl);
+    }
+  });
 });

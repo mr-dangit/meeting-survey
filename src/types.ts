@@ -7,6 +7,18 @@ export type SurveyAnswers = {
   comment: string;
 };
 
+export type SeriesOccurrence = {
+  id: string;
+  dateLabel: string;
+  shortDate: string;
+  chair: string;
+  valueScore: number;
+  respondents: number;
+  invitees: number;
+  responseRate: number;
+  questions: Record<RatingQuestionId, number>;
+};
+
 export type MeetingQuestion = {
   id: RatingQuestionId;
   prompt: string;
