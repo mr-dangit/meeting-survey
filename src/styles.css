@@ -1292,3 +1292,258 @@ textarea:focus {
     animation-iteration-count: 1 !important;
   }
 }
+
+/* Minimal centered attendee surface */
+.survey-layout {
+  display: block;
+  width: min(100% - 40px, 620px);
+  padding-top: 34px;
+  padding-bottom: 20px;
+}
+
+.survey-column,
+.survey-form {
+  width: 100%;
+  max-width: none;
+}
+
+.intro-block {
+  max-width: none;
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.intro-block h1 {
+  margin-bottom: 8px;
+  font-size: 2.25rem;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.intro-copy {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 3px;
+  max-width: none;
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.intro-copy strong {
+  color: var(--navy);
+  font-weight: 700;
+}
+
+.anonymous-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 0 0 18px;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  color: var(--muted);
+  background: transparent;
+  font-size: 0.68rem;
+  line-height: 1.3;
+}
+
+.anonymous-notice strong {
+  display: inline;
+  margin: 0;
+  color: var(--emerald);
+  font-size: inherit;
+}
+
+.question-stack {
+  border-top: 1px solid var(--rule-strong);
+}
+
+.rating-question {
+  border-bottom: 1px solid var(--rule);
+  padding: 14px 0 15px;
+}
+
+.rating-question legend {
+  display: block;
+  width: 100%;
+  color: var(--navy);
+  font-family: "Aptos", "Inter", "Segoe UI", sans-serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.rating-control {
+  justify-content: center;
+  gap: 2px;
+  margin: 9px 0 0;
+}
+
+.rating-option label {
+  display: grid;
+  width: 39px;
+  height: 34px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: var(--muted);
+  background: transparent;
+  transition: transform 150ms ease, color 150ms ease;
+}
+
+.rating-option label:hover {
+  border: 0;
+  color: var(--emerald);
+  background: transparent;
+  transform: scale(1.08);
+}
+
+.rating-option input:focus-visible + label {
+  outline: 2px solid rgba(43, 106, 92, 0.55);
+  outline-offset: 2px;
+}
+
+.rating-option input:checked + label {
+  border: 0;
+  color: inherit;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
+.star-symbol {
+  color: #b7c0b9;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.9rem;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.star-symbol.is-filled {
+  color: var(--gold);
+}
+
+.star-symbol.is-outline {
+  color: #b8c1ba;
+}
+
+.has-error .rating-control {
+  border-left: 0;
+  padding-left: 0;
+}
+
+.field-error {
+  margin: 8px 0 0;
+  color: var(--error);
+  font-size: 0.7rem;
+  text-align: center;
+}
+
+.comment-field {
+  margin-top: 17px;
+}
+
+.comment-label-row {
+  justify-content: center;
+  gap: 7px;
+  margin-bottom: 8px;
+}
+
+.comment-label-row label {
+  max-width: none;
+  color: var(--navy);
+  font-family: "Aptos", "Inter", "Segoe UI", sans-serif;
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.comment-label-row span {
+  padding-top: 0;
+  font-size: 0.62rem;
+}
+
+.survey-layout textarea {
+  min-height: 55px;
+  resize: vertical;
+  border-color: var(--rule-strong);
+  padding: 10px 12px;
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.form-actions {
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.primary-button {
+  min-width: 160px;
+  min-height: 42px;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 16px;
+  font-size: 0.7rem;
+}
+
+@media (max-width: 760px) {
+  .survey-layout {
+    width: min(100% - 36px, 520px);
+    padding-top: 28px;
+    padding-bottom: 30px;
+  }
+
+  .intro-block {
+    margin-bottom: 15px;
+  }
+
+  .intro-block h1 {
+    margin-bottom: 7px;
+    font-size: 2rem;
+  }
+
+  .intro-copy {
+    font-size: 0.73rem;
+  }
+
+  .anonymous-notice {
+    margin-bottom: 15px;
+    font-size: 0.64rem;
+  }
+
+  .rating-question {
+    padding: 12px 0 13px;
+  }
+
+  .rating-question legend {
+    font-size: 0.86rem;
+  }
+
+  .rating-control {
+    margin-top: 7px;
+  }
+
+  .rating-option label {
+    width: 36px;
+    height: 32px;
+  }
+
+  .star-symbol {
+    font-size: 1.75rem;
+  }
+
+  .comment-field {
+    margin-top: 15px;
+  }
+
+  .form-actions {
+    margin-top: 13px;
+  }
+}

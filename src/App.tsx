@@ -92,10 +92,6 @@ function App() {
         <ChairReport />
       )}
 
-      <footer className="site-footer">
-        <span>Meeting feedback prototype</span>
-        <span>Anonymous by design · Demo only</span>
-      </footer>
     </div>
   );
 }
@@ -121,44 +117,24 @@ function SurveyForm({
     <main className="content-wrap survey-layout">
       <section className="survey-column" aria-labelledby="survey-heading">
         <div className="intro-block">
-          <p className="eyebrow">Post-meeting check-in</p>
-          <h1 id="survey-heading">Share your perspective</h1>
+          <h1 id="survey-heading">Meeting feedback</h1>
           <p className="intro-copy">
-            A few thoughtful answers help us keep meetings focused, useful, and worth your time.
+            <strong>Title of the meeting</strong>
+            <span>Meeting date · Meeting chair</span>
           </p>
         </div>
 
-        <section className="meeting-context" aria-label="Meeting context">
-          <div>
-            <p className="context-label">You are responding to</p>
-            <h2>Title of the meeting</h2>
-            <p className="context-meta">Meeting date · Meeting chair</p>
-          </div>
-          <span className="context-status">Open</span>
-        </section>
-
         <aside className="anonymous-notice" role="note">
-          <span className="notice-icon" aria-hidden="true">◎</span>
-          <div>
-            <strong>Your feedback is anonymous</strong>
-            <p>Your answers are shared in aggregate. We do not attach your name to this response.</p>
-          </div>
+          <strong>Anonymous feedback</strong>
+          <span>Shared in aggregate only.</span>
         </aside>
 
         <form className="survey-form" onSubmit={onSubmit} noValidate>
-          <div className="form-heading-row">
-            <div>
-              <p className="eyebrow">Three quick ratings</p>
-              <h2>Tell us how it felt</h2>
-            </div>
-            <span className="required-note"><span aria-hidden="true">*</span> Required</span>
-          </div>
-
           <div className="question-stack">
-            {meetingQuestions.map((question, questionIndex) => {
+            {meetingQuestions.map((question) => {
               const error = errors[question.id];
-              const helperId = `${question.id}-helper`;
               const errorId = `${question.id}-error`;
+              const selectedRating = answers[question.id] ?? 0;
               return (
                 <fieldset
                   className={`rating-question${error ? " has-error" : ""}`}
@@ -168,13 +144,11 @@ function SurveyForm({
                   }}
                   tabIndex={-1}
                   aria-invalid={Boolean(error)}
-                  aria-describedby={error ? `${helperId} ${errorId}` : helperId}
+                  aria-describedby={error ? errorId : undefined}
                 >
                   <legend>
-                    <span className="question-number">0{questionIndex + 1}</span>
                     <span>{question.prompt}</span>
                   </legend>
-                  <p className="question-helper" id={helperId}>{question.helper}</p>
                   <div className="rating-control" role="radiogroup" aria-label={question.prompt}>
                     {ratingOptions.map((rating) => {
                       const inputId = `${question.id}-${rating}`;
@@ -190,16 +164,13 @@ function SurveyForm({
                             aria-label={`${question.prompt} — ${rating} out of 5`}
                           />
                           <label htmlFor={inputId}>
-                            <span className="star-symbol" aria-hidden="true">★</span>
-                            <span className="rating-number">{rating}</span>
+                            <span className={`star-symbol ${rating <= selectedRating ? "is-filled" : "is-outline"}`} aria-hidden="true">
+                              {rating <= selectedRating ? "★" : "☆"}
+                            </span>
                           </label>
                         </div>
                       );
                     })}
-                  </div>
-                  <div className="scale-labels" aria-hidden="true">
-                    <span>Not at all</span>
-                    <span>Very much</span>
                   </div>
                   {error ? <p className="field-error" id={errorId} role="alert">{error}</p> : null}
                 </fieldset>
@@ -209,16 +180,17 @@ function SurveyForm({
 
           <div className="comment-field">
             <div className="comment-label-row">
-              <label htmlFor="comment">What is one thing that would make this meeting more valuable?</label>
+              <label htmlFor="comment">Anything to improve?</label>
               <span>Optional</span>
             </div>
             <textarea
               id="comment"
               name="comment"
-              rows={4}
+              rows={2}
               value={answers.comment}
               onChange={(event) => onCommentChange(event.target.value)}
-              placeholder="Share a small improvement, a sharper question, or something to keep."
+              aria-label="What is one thing that would make this meeting more valuable?"
+              placeholder="One small suggestion"
             />
           </div>
 
@@ -227,33 +199,9 @@ function SurveyForm({
               Submit feedback
               <span aria-hidden="true">→</span>
             </button>
-            <p>By submitting, you are sharing an anonymous response for meeting improvement.</p>
           </div>
         </form>
       </section>
-
-      <aside className="side-panel" aria-label="About this survey">
-        <div className="side-panel-intro">
-          <p className="eyebrow">Why we ask</p>
-          <h2>Better meetings are built from honest signals.</h2>
-          <p>Use the scale to capture the overall experience, then leave one practical suggestion if you have one.</p>
-        </div>
-        <div className="side-panel-list">
-          <div className="side-panel-item">
-            <span>01</span>
-            <div><strong>Be direct</strong><p>There is no right answer.</p></div>
-          </div>
-          <div className="side-panel-item">
-            <span>02</span>
-            <div><strong>Keep it useful</strong><p>One clear thought is enough.</p></div>
-          </div>
-          <div className="side-panel-item">
-            <span>03</span>
-            <div><strong>Stay anonymous</strong><p>Responses are reviewed in aggregate.</p></div>
-          </div>
-        </div>
-        <div className="side-panel-footer">Usually takes less than 60 seconds.</div>
-      </aside>
     </main>
   );
 }

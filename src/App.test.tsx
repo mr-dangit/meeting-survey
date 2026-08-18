@@ -14,6 +14,29 @@ describe("meeting feedback prototype", () => {
     expect(screen.queryByText("Feedback received")).not.toBeInTheDocument();
   });
 
+  it("shows five outline stars and fills through the selected star", async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+    const usefulnessGroup = screen.getByRole("radiogroup", {
+      name: "How useful was this meeting in helping you achieve your goals?"
+    });
+
+    expect(usefulnessGroup.querySelectorAll(".rating-number")).toHaveLength(0);
+    expect(usefulnessGroup.querySelectorAll(".star-symbol.is-outline")).toHaveLength(5);
+
+    await user.click(screen.getByRole("radio", { name: /How useful.*4 out of 5/i }));
+
+    expect(usefulnessGroup.querySelectorAll(".star-symbol.is-filled")).toHaveLength(4);
+    expect(usefulnessGroup.querySelectorAll(".star-symbol.is-outline")).toHaveLength(1);
+  });
+
+  it("keeps the attendee view as one centered form without a side panel", () => {
+    render(<App />);
+
+    expect(screen.queryByRole("complementary", { name: "About this survey" })).not.toBeInTheDocument();
+  });
+
   it("shows a receipt with the respondent's own answers after submission", async () => {
     const user = userEvent.setup();
 
@@ -43,6 +66,6 @@ describe("meeting feedback prototype", () => {
     expect(screen.getByText("Meeting Value Score")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Attendee survey" }));
-    expect(screen.getByRole("heading", { name: "Share your perspective" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Meeting feedback" })).toBeInTheDocument();
   });
 });
