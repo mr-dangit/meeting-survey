@@ -241,6 +241,10 @@ function Receipt({ answers, onEdit }: ReceiptProps) {
 }
 
 function ChairReport() {
+  const highestRatedQuestion = reportData.questions.reduce((highest, question) => (
+    question.average > highest.average ? question : highest
+  ), reportData.questions[0]);
+
   return (
     <main className="content-wrap report-layout" aria-labelledby="report-heading">
       <section className="report-intro">
@@ -252,36 +256,46 @@ function ChairReport() {
         <span className="demo-badge">Prototype view</span>
       </section>
 
-      <section className="report-metrics" aria-label="Meeting overview">
-        <div className="report-metric report-metric-featured">
+      <section className="report-overview" aria-label="Meeting overview">
+        <div className="overview-score">
           <span>Meeting Value Score</span>
           <strong>{reportData.valueScore.toFixed(1)}<small> / 5</small></strong>
+          <div className="overview-track" aria-label={`${reportData.valueScore.toFixed(1)} out of 5 overall score`}>
+            <span style={{ width: `${reportData.valueScore * 20}%` }} />
+          </div>
           <p>Overall usefulness across all three questions.</p>
         </div>
-        <div className="report-metric">
-          <span>Response rate</span>
-          <strong>{reportData.responseRate}<small>%</small></strong>
-          <p>{reportData.respondents} of {reportData.invitees} invited attendees.</p>
-        </div>
-        <div className="report-metric">
-          <span>Signal</span>
-          <strong>Strong</strong>
-          <p>Most responses sit at 4 or 5.</p>
+        <div className="overview-facts">
+          <div className="overview-fact">
+            <span>Response rate</span>
+            <strong>{reportData.responseRate}%</strong>
+            <p>{reportData.respondents} of {reportData.invitees} attendees</p>
+          </div>
+          <div className="overview-fact">
+            <span>Highest score</span>
+            <strong>{highestRatedQuestion.average.toFixed(1)} / 5</strong>
+            <p>Would be invited again</p>
+          </div>
         </div>
       </section>
 
       <div className="report-body-grid">
-        <section className="report-section" aria-labelledby="averages-heading">
+        <section className="report-section scorecard-section" aria-labelledby="scorecard-heading">
           <div className="section-heading-row">
-            <div><p className="eyebrow">Question averages</p><h2 id="averages-heading">What stood out</h2></div>
-            <span className="section-count">3 questions</span>
+            <div><p className="eyebrow">Question scores</p><h2 id="scorecard-heading">What stood out</h2></div>
+            <span className="section-count">24 responses</span>
           </div>
-          <div className="average-list">
+          <div className="scorecard-list">
             {reportData.questions.map((question, index) => (
-              <div className="average-row" key={question.id}>
-                <div className="average-row-topline"><span>0{index + 1}</span><strong>{question.average.toFixed(1)} / 5</strong></div>
-                <p>{question.prompt}</p>
-                <div className="average-track" aria-label={`${question.average.toFixed(1)} out of 5 average`}><span style={{ width: `${question.average * 20}%` }} /></div>
+              <div className="scorecard-row" key={question.id}>
+                <span className="scorecard-index">0{index + 1}</span>
+                <div className="scorecard-row-copy">
+                  <p>{question.prompt}</p>
+                  <div className="scorecard-track" aria-label={`${question.average.toFixed(1)} out of 5 average`}>
+                    <span style={{ width: `${question.average * 20}%` }} />
+                  </div>
+                </div>
+                <strong>{question.average.toFixed(1)} <small>/ 5</small></strong>
               </div>
             ))}
           </div>

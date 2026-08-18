@@ -70,4 +70,21 @@ describe("meeting feedback prototype", () => {
       window.history.replaceState({}, "", originalUrl);
     }
   });
+
+  it("puts the key chair report takeaways into a glanceable scorecard", () => {
+    const originalUrl = window.location.href;
+    window.history.pushState({}, "", "/?view=report");
+
+    try {
+      render(<App />);
+
+      expect(screen.getByText("Question scores")).toBeInTheDocument();
+      expect(screen.getByText("Highest score")).toBeInTheDocument();
+      expect(screen.getByText("4.3 / 5")).toBeInTheDocument();
+      expect(screen.queryByText("Signal")).not.toBeInTheDocument();
+      expect(document.querySelectorAll(".scorecard-row")).toHaveLength(3);
+    } finally {
+      window.history.replaceState({}, "", originalUrl);
+    }
+  });
 });
