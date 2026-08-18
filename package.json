@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "concurrently -k \"vite --host 127.0.0.1\" \"tsx watch server/index.ts\"",
     "build": "vite build && tsup server/index.ts server/db/migrate-cli.ts --format esm --out-dir dist/server --sourcemap --clean",
