@@ -29,6 +29,7 @@
 - Create: `tsconfig.json`
 - Create: `tsconfig.node.json`
 - Create: `vite.config.ts`
+- Create: `.gitignore`
 - Create: `src/main.tsx`
 - Create: `src/vite-env.d.ts`
 
@@ -65,7 +66,7 @@ Run `npm install`, then `npm test`. Expected result: Vitest starts successfully 
 - [ ] **Step 5: Commit the scaffold**
 
 ```bash
-git add package.json package-lock.json index.html tsconfig.json tsconfig.node.json vite.config.ts src/main.tsx src/vite-env.d.ts
+git add package.json pnpm-lock.yaml index.html tsconfig.json tsconfig.node.json vite.config.ts .gitignore src/main.tsx src/vite-env.d.ts
 git commit -m "chore: scaffold meeting feedback prototype"
 ```
 
