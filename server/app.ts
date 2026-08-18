@@ -1,8 +1,16 @@
 import cookie from "@fastify/cookie";
 import Fastify, { type FastifyInstance } from "fastify";
 import type { AppConfig } from "./config.js";
+import type { MeetingRepository, ResponseRepository } from "./domain/repositories.js";
+import { registerAdminRoutes } from "./routes/admin.js";
 
-export async function buildApp(options: { config: AppConfig }): Promise<FastifyInstance> {
+type BuildAppOptions = {
+  config: AppConfig;
+  meetings: MeetingRepository;
+  responses: ResponseRepository;
+};
+
+export async function buildApp(options: BuildAppOptions): Promise<FastifyInstance> {
   const app = Fastify({
     logger: {
       redact: [
@@ -14,9 +22,10 @@ export async function buildApp(options: { config: AppConfig }): Promise<FastifyI
     }
   });
 
-  await app.register(cookie);
+  await app.register(cookie, { secret: options.config.sessionSecret });
 
   app.get("/api/health", async () => ({ status: "ok" }));
+  await registerAdminRoutes(app, { config: options.config, meetings: options.meetings });
 
   return app;
 }
