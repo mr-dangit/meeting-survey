@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { MeetingRepository, ResponseRepository } from "../domain/repositories.js";
 import {
   submissionSchema,
@@ -27,6 +27,17 @@ function sendSurveyError(error: unknown, reply: { code(statusCode: number): { se
   return reply.code(503).send({ error: "Feedback could not be saved. Please try again." });
 }
 
+function handleSurveySubmissionError(
+  error: FastifyError,
+  _request: FastifyRequest,
+  reply: FastifyReply
+) {
+  if (error.code === "FST_ERR_CTP_INVALID_JSON_BODY") {
+    return reply.code(400).send({ error: "Check the survey answers and try again." });
+  }
+  return reply.send(error);
+}
+
 export async function registerSurveyRoutes(app: FastifyInstance, options: SurveyRoutesOptions): Promise<void> {
   const service = new SurveyService(options.meetings, options.responses);
 
@@ -38,17 +49,21 @@ export async function registerSurveyRoutes(app: FastifyInstance, options: Survey
     }
   });
 
-  app.post("/api/survey/responses", async (request, reply) => {
-    const parsed = submissionSchema.safeParse(request.body);
-    if (!parsed.success) {
-      return reply.code(400).send({ error: "Check the survey answers and try again." });
-    }
+  app.post(
+    "/api/survey/responses",
+    { errorHandler: handleSurveySubmissionError },
+    async (request, reply) => {
+      const parsed = submissionSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.code(400).send({ error: "Check the survey answers and try again." });
+      }
 
-    try {
-      const result = await service.submit(surveyAccess(request.headers), parsed.data);
-      return reply.code(201).send(result);
-    } catch (error) {
-      return sendSurveyError(error, reply);
+      try {
+        const result = await service.submit(surveyAccess(request.headers), parsed.data);
+        return reply.code(201).send(result);
+      } catch (error) {
+        return sendSurveyError(error, reply);
+      }
     }
-  });
+  );
 }

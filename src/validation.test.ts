@@ -39,3 +39,12 @@ describe("validateSurvey", () => {
     ).toEqual({});
   });
 });
+
+it("rejects out-of-range ratings and oversized comments", () => {
+  expect(validateSurvey({ usefulness: 0, actionability: 6, reInvite: 2.5, comment: "x".repeat(1001) })).toEqual({
+    usefulness: "Please select a rating.",
+    actionability: "Please select a rating.",
+    reInvite: "Please select a rating.",
+    comment: "Keep the comment to 1,000 characters or fewer."
+  });
+});

@@ -161,6 +161,21 @@ describe("survey routes", () => {
     expect(response.json()).toEqual({ error: "Check the survey answers and try again." });
   });
 
+  it("returns the safe validation error for malformed JSON submissions", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/survey/responses",
+      headers: {
+        "content-type": "application/json",
+        "x-survey-access": surveyAccess
+      },
+      payload: "{\"usefulness\":4"
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toEqual({ error: "Check the survey answers and try again." });
+  });
+
   it("returns a safe unavailable error when response persistence fails", async () => {
     await app.close();
     const unavailableResponses: ResponseRepository = {

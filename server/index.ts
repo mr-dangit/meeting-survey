@@ -9,11 +9,16 @@ async function start() {
   const app = await buildApp({
     config,
     meetings: new PostgresMeetingRepository(pool),
-    responses: new PostgresResponseRepository(pool)
+    responses: new PostgresResponseRepository(pool),
+    staticRoot: path.resolve(process.cwd(), "dist/client")
   });
   app.addHook("onClose", async () => pool.end());
 
   await app.listen({ host: "0.0.0.0", port: config.port });
 }
 
-void start();
+void start().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
+import path from "node:path";
