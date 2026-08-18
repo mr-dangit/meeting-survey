@@ -11,7 +11,7 @@ pnpm install
 pnpm dev -- --host 127.0.0.1
 ```
 
-Open the localhost URL printed by Vite. The demo includes a switch in the top-right corner for moving between the attendee survey and the chair report.
+Open the localhost URL printed by Vite for the attendee survey. The chair report demo is available directly at `http://localhost:5173/?view=report`; it is intentionally not exposed as a survey control.
 
 ## Verify
 

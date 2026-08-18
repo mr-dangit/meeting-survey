@@ -1,24 +1,24 @@
 :root {
-  color: #182b2a;
-  background: #f4f1eb;
+  color: #304564;
+  background: #ffffff;
   font-family: "Aptos", "Inter", "Segoe UI", sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  --ink: #182b2a;
-  --ink-soft: #38504d;
-  --navy: #183937;
-  --navy-deep: #102b2a;
-  --paper: #f4f1eb;
-  --paper-bright: #fbfaf7;
-  --paper-warm: #ebe7de;
-  --muted: #6e7b75;
-  --rule: #d5d5c9;
-  --rule-strong: #bdc3b8;
-  --emerald: #2b6a5c;
-  --emerald-soft: #dbe8df;
-  --gold: #bb8b42;
+  --ink: #304564;
+  --ink-soft: #304564;
+  --navy: #123265;
+  --navy-deep: #123265;
+  --paper: #ffffff;
+  --paper-bright: #ffffff;
+  --paper-warm: #f3f6fa;
+  --muted: #66778e;
+  --rule: #d9e0e8;
+  --rule-strong: #bcc9d8;
+  --emerald: #6aa8d7;
+  --emerald-soft: #e7f1fa;
+  --gold: #6aa8d7;
   --error: #a3443e;
-  --serif: Georgia, "Times New Roman", serif;
+  --serif: "EB Garamond", Georgia, "Times New Roman", serif;
 }
 
 * {
@@ -33,9 +33,7 @@ html {
 body {
   min-width: 320px;
   margin: 0;
-  background:
-    radial-gradient(circle at 90% 0%, rgba(202, 219, 207, 0.32), transparent 25rem),
-    var(--paper);
+  background: var(--paper);
 }
 
 button,
@@ -66,10 +64,16 @@ fieldset:focus-visible {
   display: flex;
   width: min(100% - 56px, 1240px);
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 32px;
   margin: 0 auto;
   padding: 28px 0 23px;
+}
+
+.dymon-logo {
+  display: block;
+  width: min(226px, 42vw);
+  height: auto;
 }
 
 .wordmark,
@@ -1406,7 +1410,7 @@ textarea:focus {
 }
 
 .rating-option input:focus-visible + label {
-  outline: 2px solid rgba(43, 106, 92, 0.55);
+  outline: 2px solid rgba(18, 50, 101, 0.55);
   outline-offset: 2px;
 }
 

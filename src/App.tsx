@@ -19,7 +19,9 @@ const initialAnswers = (): SurveyAnswers => ({
 type Mode = "attendee" | "report";
 
 function App() {
-  const [mode, setMode] = useState<Mode>("attendee");
+  const [mode] = useState<Mode>(() => (
+    new URLSearchParams(window.location.search).get("view") === "report" ? "report" : "attendee"
+  ));
   const [answers, setAnswers] = useState<SurveyAnswers>(initialAnswers);
   const [submittedAnswers, setSubmittedAnswers] = useState<SurveyAnswers | null>(null);
   const [errors, setErrors] = useState<ValidationErrors>({});
@@ -54,23 +56,11 @@ function App() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <div className="wordmark" aria-label="Dymon meeting feedback prototype">
-          <span className="wordmark-name">Dymon</span>
-          <span className="wordmark-divider" aria-hidden="true">/</span>
-          <span className="wordmark-context">Meeting feedback</span>
-        </div>
-        <div className="topbar-actions">
-          <span className="prototype-label">Internal prototype</span>
-          <button
-            className="mode-switch"
-            type="button"
-            aria-label={mode === "attendee" ? "Chair report" : "Attendee survey"}
-            onClick={() => setMode(mode === "attendee" ? "report" : "attendee")}
-          >
-            {mode === "attendee" ? "Chair report" : "Attendee survey"}
-            <span aria-hidden="true">↗</span>
-          </button>
-        </div>
+        <img
+          className="dymon-logo"
+          src="/dymon-asia-logo.png"
+          alt="Dymon Asia Capital"
+        />
       </header>
 
       <div className="page-rule" aria-hidden="true" />

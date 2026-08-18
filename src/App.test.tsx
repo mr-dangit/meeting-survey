@@ -57,15 +57,17 @@ describe("meeting feedback prototype", () => {
     expect(screen.getByText("A short decision recap would help.")).toBeInTheDocument();
   });
 
-  it("switches between attendee survey and chair report views", async () => {
-    const user = userEvent.setup();
+  it("keeps the chair report accessible from a demo URL without a header button", () => {
+    const originalUrl = window.location.href;
+    window.history.pushState({}, "", "/?view=report");
 
-    render(<App />);
-    await user.click(screen.getByRole("button", { name: "Chair report" }));
-    expect(screen.getByRole("heading", { name: "Chair report" })).toBeInTheDocument();
-    expect(screen.getByText("Meeting Value Score")).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "Attendee survey" }));
-    expect(screen.getByRole("heading", { name: "Meeting feedback" })).toBeInTheDocument();
+    try {
+      render(<App />);
+      expect(screen.getByRole("heading", { name: "Chair report" })).toBeInTheDocument();
+      expect(screen.getByText("Meeting Value Score")).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Chair report" })).not.toBeInTheDocument();
+    } finally {
+      window.history.replaceState({}, "", originalUrl);
+    }
   });
 });
