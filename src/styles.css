@@ -1771,3 +1771,46 @@ textarea:focus {
     font-size: 1.45rem;
   }
 }
+
+.admin-meeting {
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 18px 20px;
+  margin-bottom: 14px;
+  background: var(--paper-bright);
+}
+
+.admin-meeting h3 {
+  margin: 0 0 4px;
+}
+
+.admin-meeting button + button {
+  margin-left: 10px;
+}
+
+.admin-access {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+
+.admin-access h4 {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.admin-access p {
+  margin: 6px 0;
+}
+
+.admin-access code {
+  display: block;
+  overflow-wrap: anywhere;
+  padding: 8px 10px;
+  border-radius: 4px;
+  background: var(--paper-warm);
+  font-size: 0.85rem;
+}

@@ -1,6 +1,7 @@
 import type {
   AdminMeeting,
   CreateMeetingInput,
+  MeetingAccess,
   ReportView,
   SurveyAnswers,
   SurveyContext
@@ -32,6 +33,8 @@ export const createMeeting = (input: CreateMeetingInput) =>
   request<{ meeting: AdminMeeting; surveyAccess: string; reportAccess: string }>("/api/admin/meetings", {
     method: "POST", body: JSON.stringify(input)
   });
+export const getMeetingAccess = (id: string) =>
+  request<MeetingAccess>(`/api/admin/meetings/${encodeURIComponent(id)}/access`);
 export const setMeetingStatus = (id: string, status: "open" | "closed") =>
   request<AdminMeeting>(`/api/admin/meetings/${encodeURIComponent(id)}/status`, {
     method: "PATCH", body: JSON.stringify({ status })

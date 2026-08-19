@@ -43,8 +43,10 @@ export type AdminMeeting = {
   meetingAt: string;
   invitedCount: number;
   status: MeetingStatus;
+  hasAccessLinks: boolean;
 };
-export type CreateMeetingInput = Omit<AdminMeeting, "id" | "status">;
+export type MeetingAccess = { surveyAccess: string; reportAccess: string };
+export type CreateMeetingInput = Omit<AdminMeeting, "id" | "status" | "hasAccessLinks">;
 export type SurveyContext = Pick<AdminMeeting, "id" | "title" | "chairLabel" | "meetingAt" | "status">;
 export type CompleteReportView = {
   status: "complete";

@@ -32,6 +32,13 @@ const migrations: Migration[] = [
       )`,
       "create index if not exists responses_meeting_id_idx on responses(meeting_id)"
     ]
+  },
+  {
+    version: 2,
+    statements: [
+      "alter table meetings add column if not exists survey_secret text",
+      "alter table meetings add column if not exists report_secret text"
+    ]
   }
 ];
 

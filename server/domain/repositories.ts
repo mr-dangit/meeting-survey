@@ -20,6 +20,7 @@ export type CreateMeetingRecord = Meeting;
 export interface MeetingRepository {
   create(input: CreateMeetingRecord): Promise<Meeting>;
   list(): Promise<Meeting[]>;
+  findById(id: string): Promise<Meeting | null>;
   findBySurveyHash(hash: string): Promise<Meeting | null>;
   findByReportHash(hash: string): Promise<Meeting | null>;
   setStatus(id: string, status: MeetingStatus, updatedAt: Date): Promise<Meeting | null>;

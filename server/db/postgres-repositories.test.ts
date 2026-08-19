@@ -16,6 +16,8 @@ function meetingFixture(): Meeting {
     status: "open",
     surveySecretHash: surveyHash,
     reportSecretHash: reportHash,
+    surveySecret: "survey-secret-value",
+    reportSecret: "report-secret-value",
     createdAt: new Date("2026-08-01T08:00:00.000Z"),
     updatedAt: new Date("2026-08-01T08:00:00.000Z")
   };
@@ -101,13 +103,13 @@ describe("PostgreSQL repositories", () => {
     expect(await responses.listForMeeting(meeting.id)).toEqual([]);
   });
 
-  it("records the versioned migration exactly once", async () => {
+  it("records the versioned migrations exactly once", async () => {
     const { pool } = await createTestDatabase();
     pools.push(pool);
 
     await runMigrations(pool);
 
     const result = await pool.query<{ version: number }>("select version from schema_migrations order by version");
-    expect(result.rows).toEqual([{ version: 1 }]);
+    expect(result.rows).toEqual([{ version: 1 }, { version: 2 }]);
   });
 });

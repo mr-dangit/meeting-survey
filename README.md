@@ -52,6 +52,8 @@ The application uses hash routes, so access secrets are not sent in HTTP request
 - `/#/survey/<shared-secret>`
 - `/#/report/<private-secret>`
 
+Meeting access secrets are stored on the `meetings` row alongside their lookup hashes, so an administrator can reopen a saved meeting and retrieve its links. They are returned only to a logged-in administrator through `GET /api/admin/meetings/:id/access`; the meeting list itself never carries them. Meetings created before this change keep only the hashes, so their links cannot be shown.
+
 ## Privacy and MVP limits
 
 Responses store only three 1–5 scores, an optional comment, meeting ID, response ID, and submission time. They do not store attendee identity, access secrets, IP addresses, browser fingerprints, or user-agent strings.

@@ -9,6 +9,8 @@ export type Meeting = {
   status: MeetingStatus;
   surveySecretHash: string;
   reportSecretHash: string;
+  surveySecret: string | null;
+  reportSecret: string | null;
   createdAt: Date;
   updatedAt: Date;
 };

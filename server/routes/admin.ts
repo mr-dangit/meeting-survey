@@ -83,6 +83,16 @@ export async function registerAdminRoutes(app: FastifyInstance, options: AdminRo
     return reply.code(201).send(created);
   });
 
+  app.get("/api/admin/meetings/:id/access", async (request, reply) => {
+    if (!requireAdmin(request, reply)) return reply;
+    const params = idSchema.safeParse(request.params);
+    if (!params.success) return reply.code(400).send({ error: "Check the meeting reference and try again." });
+
+    const access = await service.access(params.data.id);
+    if (!access) return reply.code(404).send({ error: "Access links are not available for this meeting." });
+    return access;
+  });
+
   app.patch("/api/admin/meetings/:id/status", async (request, reply) => {
     if (!requireAdmin(request, reply)) return reply;
     const params = idSchema.safeParse(request.params);

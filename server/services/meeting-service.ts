@@ -13,7 +13,12 @@ export type CreateMeetingInput = {
 export type AdminMeeting = Pick<
   Meeting,
   "id" | "title" | "chairLabel" | "meetingAt" | "invitedCount" | "status"
->;
+> & { hasAccessLinks: boolean };
+
+export type MeetingAccess = {
+  surveyAccess: string;
+  reportAccess: string;
+};
 
 export type CreatedMeeting = {
   meeting: AdminMeeting;
@@ -28,7 +33,8 @@ function toAdminMeeting(meeting: Meeting): AdminMeeting {
     chairLabel: meeting.chairLabel,
     meetingAt: meeting.meetingAt,
     invitedCount: meeting.invitedCount,
-    status: meeting.status
+    status: meeting.status,
+    hasAccessLinks: meeting.surveySecret !== null && meeting.reportSecret !== null
   };
 }
 
@@ -48,6 +54,8 @@ export class MeetingService {
       status: "open",
       surveySecretHash: hashAccessSecret(surveyAccess),
       reportSecretHash: hashAccessSecret(reportAccess),
+      surveySecret: surveyAccess,
+      reportSecret: reportAccess,
       createdAt: now,
       updatedAt: now
     });
@@ -57,6 +65,12 @@ export class MeetingService {
 
   async list(): Promise<AdminMeeting[]> {
     return (await this.meetings.list()).map(toAdminMeeting);
+  }
+
+  async access(id: string): Promise<MeetingAccess | null> {
+    const meeting = await this.meetings.findById(id);
+    if (!meeting?.surveySecret || !meeting.reportSecret) return null;
+    return { surveyAccess: meeting.surveySecret, reportAccess: meeting.reportSecret };
   }
 
   async setStatus(id: string, status: MeetingStatus): Promise<AdminMeeting | null> {

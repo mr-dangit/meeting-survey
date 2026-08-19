@@ -39,7 +39,7 @@ describe("administrator routes", () => {
     return response.cookies.find((item) => item.name === "admin_session")!.value;
   }
 
-  it("requires login and creates unrelated hashed access secrets", async () => {
+  it("requires login and creates unrelated access secrets", async () => {
     const unauthenticated = await app.inject({ method: "GET", url: "/api/admin/meetings" });
     expect(unauthenticated.statusCode).toBe(401);
 
@@ -59,8 +59,11 @@ describe("administrator routes", () => {
     expect(created.statusCode).toBe(201);
     const body = created.json();
     expect(body.surveyAccess).not.toBe(body.reportAccess);
-    expect(JSON.stringify(await repositories.meetings.list())).not.toContain(body.surveyAccess);
-    expect(JSON.stringify(await repositories.meetings.list())).not.toContain(body.reportAccess);
+    const [stored] = await repositories.meetings.list();
+    expect(stored.surveySecretHash).not.toBe(body.surveyAccess);
+    expect(stored.reportSecretHash).not.toBe(body.reportAccess);
+    expect(stored.surveySecret).toBe(body.surveyAccess);
+    expect(stored.reportSecret).toBe(body.reportAccess);
   });
 
   it("rejects invalid passphrases and clears the administrator session on logout", async () => {
@@ -134,6 +137,46 @@ describe("administrator routes", () => {
     expect(listed.body).not.toContain("reportSecretHash");
     expect(listed.body).not.toContain(body.surveyAccess);
     expect(listed.body).not.toContain(body.reportAccess);
+  });
+
+  it("returns the stored access links for a saved meeting", async () => {
+    const cookie = await login();
+    const created = await app.inject({
+      method: "POST",
+      url: "/api/admin/meetings",
+      cookies: { admin_session: cookie },
+      payload: {
+        title: "Weekly investment review",
+        chairLabel: "Meeting chair",
+        meetingAt: "2026-08-18T08:00:00.000Z",
+        invitedCount: 5
+      }
+    });
+    const body = created.json();
+
+    const anonymous = await app.inject({
+      method: "GET",
+      url: `/api/admin/meetings/${body.meeting.id}/access`
+    });
+    expect(anonymous.statusCode).toBe(401);
+
+    const access = await app.inject({
+      method: "GET",
+      url: `/api/admin/meetings/${body.meeting.id}/access`,
+      cookies: { admin_session: cookie }
+    });
+    expect(access.statusCode).toBe(200);
+    expect(access.json()).toEqual({
+      surveyAccess: body.surveyAccess,
+      reportAccess: body.reportAccess
+    });
+
+    const missing = await app.inject({
+      method: "GET",
+      url: "/api/admin/meetings/10000000-0000-4000-8000-000000000009/access",
+      cookies: { admin_session: cookie }
+    });
+    expect(missing.statusCode).toBe(404);
   });
 
   it("closes and reopens a meeting", async () => {

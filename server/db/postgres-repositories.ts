@@ -14,6 +14,8 @@ type MeetingRow = {
   status: MeetingStatus;
   survey_secret_hash: string;
   report_secret_hash: string;
+  survey_secret: string | null;
+  report_secret: string | null;
   created_at: Date | string;
   updated_at: Date | string;
 };
@@ -42,6 +44,8 @@ function mapMeeting(row: MeetingRow): Meeting {
     status: row.status,
     surveySecretHash: row.survey_secret_hash,
     reportSecretHash: row.report_secret_hash,
+    surveySecret: row.survey_secret ?? null,
+    reportSecret: row.report_secret ?? null,
     createdAt: asDate(row.created_at),
     updatedAt: asDate(row.updated_at)
   };
@@ -65,8 +69,8 @@ export class PostgresMeetingRepository implements MeetingRepository {
   async create(input: Meeting): Promise<Meeting> {
     const result = await this.pool.query<MeetingRow>(
       `insert into meetings
-       (id, title, chair_label, meeting_at, invited_count, status, survey_secret_hash, report_secret_hash, created_at, updated_at)
-       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       (id, title, chair_label, meeting_at, invited_count, status, survey_secret_hash, report_secret_hash, survey_secret, report_secret, created_at, updated_at)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        returning *`,
       [
         input.id,
@@ -77,6 +81,8 @@ export class PostgresMeetingRepository implements MeetingRepository {
         input.status,
         input.surveySecretHash,
         input.reportSecretHash,
+        input.surveySecret,
+        input.reportSecret,
         input.createdAt,
         input.updatedAt
       ]
@@ -87,6 +93,11 @@ export class PostgresMeetingRepository implements MeetingRepository {
   async list(): Promise<Meeting[]> {
     const result = await this.pool.query<MeetingRow>("select * from meetings order by created_at asc");
     return result.rows.map(mapMeeting);
+  }
+
+  async findById(id: string): Promise<Meeting | null> {
+    const result = await this.pool.query<MeetingRow>("select * from meetings where id = $1", [id]);
+    return result.rows[0] ? mapMeeting(result.rows[0]) : null;
   }
 
   async findBySurveyHash(hash: string): Promise<Meeting | null> {
