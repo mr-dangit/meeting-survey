@@ -27,6 +27,13 @@ describe("application routing", () => {
     expect(container.querySelector(".page-rule")).toBeInTheDocument();
   });
 
+  it("renders the fictional series demo only on its explicit route", () => {
+    window.location.hash = "#/series-demo";
+    render(<App />);
+    expect(screen.getByRole("heading", { name: "Investment Committee" })).toBeInTheDocument();
+    expect(screen.getByText("Fictional demo data")).toBeInTheDocument();
+  });
+
   it("renders a safe not-found page for unknown routes", () => {
     window.location.hash = "#/unknown";
     render(<App />);

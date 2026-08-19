@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { AdminPage } from "./pages/AdminPage";
 import { ReportPage } from "./pages/ReportPage";
+import { SeriesDemoPage } from "./pages/SeriesDemoPage";
 import { SurveyPage } from "./pages/SurveyPage";
 import { parseHashRoute } from "./routing";
 
@@ -19,6 +20,7 @@ function App() {
     {route.kind === "admin" && <AdminPage />}
     {route.kind === "survey" && <SurveyPage access={route.access} />}
     {route.kind === "report" && <ReportPage access={route.access} />}
+    {route.kind === "series_demo" && <SeriesDemoPage />}
     {route.kind === "not_found" && <main><h1>Page not found</h1><p>Check the link and try again.</p></main>}
   </div>;
 }

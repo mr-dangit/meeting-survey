@@ -2,12 +2,14 @@ export type HashRoute =
   | { kind: "admin" }
   | { kind: "survey"; access: string }
   | { kind: "report"; access: string }
+  | { kind: "series_demo" }
   | { kind: "not_found" };
 
 export function parseHashRoute(hash: string): HashRoute {
   if (hash === "" || hash === "#" || hash === "#/") return { kind: "admin" };
 
   const [kind, encoded, ...rest] = hash.replace(/^#\/?/, "").split("/");
+  if (kind === "series-demo" && !encoded && rest.length === 0) return { kind: "series_demo" };
   if (kind === "admin" && !encoded) return { kind: "admin" };
   if ((kind === "survey" || kind === "report") && encoded && rest.length === 0) {
     try {
