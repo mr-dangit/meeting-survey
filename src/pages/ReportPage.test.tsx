@@ -8,11 +8,11 @@ vi.mock("../api", () => ({ getReport: vi.fn() }));
 describe("ReportPage", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("renders the privacy threshold state without scores or counts", async () => {
-    vi.mocked(getReport).mockResolvedValue({ status: "threshold_not_met", minimumResponses: 3 });
+  it("renders the awaiting-response state without scores or counts", async () => {
+    vi.mocked(getReport).mockResolvedValue({ status: "threshold_not_met", minimumResponses: 1 });
     render(<ReportPage access="report-secret" />);
     expect(await screen.findByRole("heading", { name: "Chair report" })).toBeInTheDocument();
-    expect(screen.getByText(/at least 3 anonymous responses/i)).toBeInTheDocument();
+    expect(screen.getByText(/first anonymous response/i)).toBeInTheDocument();
     expect(screen.queryByText(/Meeting Value Score/i)).not.toBeInTheDocument();
   });
 

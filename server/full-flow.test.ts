@@ -17,7 +17,7 @@ describe("complete meeting feedback flow", () => {
   const cleanups: Array<() => Promise<void>> = [];
   afterEach(async () => Promise.all(cleanups.splice(0).map((cleanup) => cleanup())));
 
-  it("keeps responses anonymous and reports only after three submissions", async () => {
+  it("keeps responses anonymous and reports from the first submission", async () => {
     const database = await createTestDatabase();
     const staticRoot = await mkdtemp(path.join(tmpdir(), "meeting-feedback-"));
     await writeFile(path.join(staticRoot, "index.html"), "<main>meeting feedback</main>");
@@ -54,7 +54,7 @@ describe("complete meeting feedback flow", () => {
       url: "/api/report",
       headers: { "x-report-access": reportAccess }
     });
-    expect(threshold.json()).toEqual({ status: "threshold_not_met", minimumResponses: 3 });
+    expect(threshold.json()).toEqual({ status: "threshold_not_met", minimumResponses: 1 });
 
     const answers = [
       { usefulness: 5, actionability: 4, reInvite: 3, comment: "Shorter pre-read." },
@@ -69,6 +69,15 @@ describe("complete meeting feedback flow", () => {
         payload
       });
       expect(response.statusCode).toBe(201);
+
+      if (payload === answers[0]) {
+        const afterFirst = await app.inject({
+          method: "GET",
+          url: "/api/report",
+          headers: { "x-report-access": reportAccess }
+        });
+        expect(afterFirst.json()).toMatchObject({ status: "complete", responseCount: 1 });
+      }
     }
 
     const report = await app.inject({

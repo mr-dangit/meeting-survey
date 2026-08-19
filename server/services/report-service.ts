@@ -16,7 +16,7 @@ export class ReportService {
     const meeting = await this.meetings.findByReportHash(hashAccessSecret(access));
     if (!meeting) throw new ReportNotFoundError();
     const responses = await this.responses.listForMeeting(meeting.id);
-    if (responses.length < 3) return { status: "threshold_not_met", minimumResponses: 3 };
+    if (responses.length < 1) return { status: "threshold_not_met", minimumResponses: 1 };
     return calculateReport(meeting, responses);
   }
 }

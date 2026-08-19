@@ -1,6 +1,6 @@
 # Meeting Feedback MVP
 
-A React/Fastify meeting-feedback MVP hosted on Vercel with anonymous responses stored in Supabase Postgres. Administrators create meetings, attendees submit through a shared secret link, and chairs receive aggregate results only after three responses.
+A React/Fastify meeting-feedback MVP hosted on Vercel with anonymous responses stored in Supabase Postgres. Administrators create meetings, attendees submit through a shared secret link, and chairs receive aggregate results as soon as the first response arrives.
 
 ## Architecture
 
@@ -58,4 +58,4 @@ Meeting access secrets are stored on the `meetings` row alongside their lookup h
 
 Responses store only three 1–5 scores, an optional comment, meeting ID, response ID, and submission time. They do not store attendee identity, access secrets, IP addresses, browser fingerprints, or user-agent strings.
 
-The shared survey link permits repeat submissions. Reports expose no scores, comments, distributions, or precise response count until at least three responses exist. Supabase RLS is enabled with policies only for the least-privilege backend role; browser-facing `anon` and `authenticated` roles have no table access.
+The shared survey link permits repeat submissions. Reports expose no scores, comments, distributions, or response count until at least one response exists. Note that with a single response the chair sees that respondent's comment and ratings in isolation, so anonymity depends on volume rather than on a minimum-response threshold. Supabase RLS is enabled with policies only for the least-privilege backend role; browser-facing `anon` and `authenticated` roles have no table access.

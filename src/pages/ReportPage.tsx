@@ -25,7 +25,7 @@ export function ReportPage({ access }: { access: string }) {
   if (report?.status === "threshold_not_met") {
     return <main className="content-wrap report-layout" aria-labelledby="report-heading">
       <section className="report-intro threshold-state">
-        <div><p className="eyebrow">Private meeting report</p><h1 id="report-heading">Chair report</h1><p className="intro-copy">Results will appear after at least {report.minimumResponses} anonymous responses.</p></div>
+        <div><p className="eyebrow">Private meeting report</p><h1 id="report-heading">Chair report</h1><p className="intro-copy">Results will appear as soon as the first anonymous response arrives.</p></div>
         <span className="threshold-badge">Awaiting responses</span>
       </section>
     </main>;

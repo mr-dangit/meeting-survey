@@ -44,5 +44,5 @@ export type CompleteReport = {
   comments: string[];
 };
 export type ReportResult =
-  | { status: "threshold_not_met"; minimumResponses: 3 }
+  | { status: "threshold_not_met"; minimumResponses: 1 }
   | CompleteReport;
