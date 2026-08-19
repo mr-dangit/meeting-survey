@@ -1,8 +1,7 @@
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AdminPage } from "./AdminPage";
-import { getMeetingAccess, listMeetings, login } from "../api";
+import { createMeeting, getMeetingAccess, listMeetings, login, setMeetingStatus } from "../api";
 
 vi.mock("../api", () => ({
   ApiError: class ApiError extends Error {},
@@ -14,7 +13,7 @@ vi.mock("../api", () => ({
 }));
 
 const meeting = {
-  id: "10000000-0000-4000-8000-000000000001",
+  id: "m1",
   title: "Investment Committee",
   chairLabel: "Amelia Tan",
   meetingAt: "2026-08-12T09:30:00.000Z",
@@ -23,50 +22,85 @@ const meeting = {
   hasAccessLinks: true
 };
 
-async function signIn() {
-  const user = userEvent.setup();
+function signIn() {
   render(<AdminPage />);
-  await user.type(screen.getByLabelText(/administrator passphrase/i), "secret");
-  await user.click(screen.getByRole("button", { name: "Log in" }));
-  return user;
+  fireEvent.change(screen.getByLabelText(/administrator passphrase/i), { target: { value: "correct-passphrase" } });
+  fireEvent.click(screen.getByRole("button", { name: /log in/i }));
 }
 
 describe("AdminPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(login).mockResolvedValue(undefined);
-    vi.mocked(listMeetings).mockResolvedValue([meeting]);
   });
 
-  it("reveals the stored access links for a saved meeting on click", async () => {
-    vi.mocked(getMeetingAccess).mockResolvedValue({
+  it("renders the restored administrator shell and creates meeting links", async () => {
+    vi.mocked(listMeetings).mockResolvedValue([]);
+    vi.mocked(createMeeting).mockResolvedValue({
+      meeting,
       surveyAccess: "survey-secret",
       reportAccess: "report-secret"
     });
-    const user = await signIn();
+    render(<AdminPage />);
 
-    expect(await screen.findByRole("heading", { name: "Investment Committee" })).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /attendee survey/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /meeting feedback administration/i })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(/administrator passphrase/i), { target: { value: "correct-passphrase" } });
+    fireEvent.click(screen.getByRole("button", { name: /log in/i }));
+    expect(await screen.findByRole("heading", { name: /set up a meeting/i })).toBeInTheDocument();
+    expect(screen.getByText(/no meetings yet/i)).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Show secret access links" }));
+    fireEvent.change(screen.getByLabelText(/meeting title/i), { target: { value: meeting.title } });
+    fireEvent.change(screen.getByLabelText(/chair label/i), { target: { value: meeting.chairLabel } });
+    fireEvent.change(screen.getByLabelText(/meeting date and time/i), { target: { value: "2026-08-12T09:30" } });
+    fireEvent.change(screen.getByLabelText(/invited attendees/i), { target: { value: "5" } });
+    fireEvent.click(screen.getByRole("button", { name: /create meeting/i }));
 
-    expect(getMeetingAccess).toHaveBeenCalledWith(meeting.id);
-    expect(await screen.findByRole("link", { name: /attendee survey/i }))
-      .toHaveAttribute("href", `${window.location.origin}/#/survey/survey-secret`);
-    expect(screen.getByRole("link", { name: /chair report/i }))
-      .toHaveAttribute("href", `${window.location.origin}/#/report/report-secret`);
+    expect(await screen.findByRole("heading", { name: /secret access links/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /open attendee survey/i })).toHaveAttribute("href", expect.stringContaining("#/survey/survey-secret"));
+    expect(screen.getByRole("link", { name: /open chair report/i })).toHaveAttribute("href", expect.stringContaining("#/report/report-secret"));
+  });
 
-    await user.click(screen.getByRole("button", { name: "Hide secret access links" }));
-    expect(screen.queryByRole("link", { name: /attendee survey/i })).not.toBeInTheDocument();
+  it("closes an open meeting from the meeting list", async () => {
+    vi.mocked(listMeetings).mockResolvedValue([meeting]);
+    vi.mocked(setMeetingStatus).mockResolvedValue({ ...meeting, status: "closed" });
+    signIn();
+
+    expect(await screen.findByRole("button", { name: /close survey/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /close survey/i }));
+
+    await waitFor(() => expect(setMeetingStatus).toHaveBeenCalledWith("m1", "closed"));
+    expect(await screen.findByRole("button", { name: /reopen survey/i })).toBeInTheDocument();
+  });
+
+  it("reveals the stored access links for a saved meeting on click", async () => {
+    vi.mocked(listMeetings).mockResolvedValue([meeting]);
+    vi.mocked(getMeetingAccess).mockResolvedValue({
+      surveyAccess: "saved-survey-secret",
+      reportAccess: "saved-report-secret"
+    });
+    signIn();
+
+    const show = await screen.findByRole("button", { name: "Show links" });
+    expect(screen.queryByRole("link", { name: /open attendee survey/i })).not.toBeInTheDocument();
+    fireEvent.click(show);
+
+    await waitFor(() => expect(getMeetingAccess).toHaveBeenCalledWith("m1"));
+    expect(await screen.findByRole("link", { name: /open attendee survey/i }))
+      .toHaveAttribute("href", expect.stringContaining("#/survey/saved-survey-secret"));
+    expect(screen.getByRole("link", { name: /open chair report/i }))
+      .toHaveAttribute("href", expect.stringContaining("#/report/saved-report-secret"));
+
+    fireEvent.click(screen.getByRole("button", { name: "Hide links" }));
+    expect(screen.queryByRole("link", { name: /open attendee survey/i })).not.toBeInTheDocument();
   });
 
   it("explains when a meeting predates stored access links", async () => {
     vi.mocked(listMeetings).mockResolvedValue([{ ...meeting, hasAccessLinks: false }]);
-    const user = await signIn();
+    signIn();
 
-    await user.click(await screen.findByRole("button", { name: "Show secret access links" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Show links" }));
 
     expect(getMeetingAccess).not.toHaveBeenCalled();
-    expect(screen.getByRole("alert")).toHaveTextContent(/cannot be shown/i);
+    expect(await screen.findByRole("alert")).toHaveTextContent(/cannot be shown/i);
   });
 });

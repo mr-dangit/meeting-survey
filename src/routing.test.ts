@@ -9,4 +9,8 @@ describe("hash routing", () => {
     expect(parseHashRoute("#/report/chair-secret")).toEqual({ kind: "report", access: "chair-secret" });
     expect(parseHashRoute("#/unknown")).toEqual({ kind: "not_found" });
   });
+
+  it("recognizes the explicitly labeled series demo route", () => {
+    expect(parseHashRoute("#/series-demo")).toEqual({ kind: "series_demo" });
+  });
 });
