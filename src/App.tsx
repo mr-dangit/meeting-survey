@@ -14,7 +14,7 @@ function App() {
   }, []);
 
   return <div className="app-shell">
-    <header className="topbar"><img className="dymon-logo" src="/dymon-asia-logo.png" alt="Dymon Asia Capital" /></header>
+    <header className="topbar" role="banner"><img className="dymon-logo" src="/dymon-asia-logo.png" alt="Dymon Asia Capital" /></header>
     <div className="page-rule" aria-hidden="true" />
     {route.kind === "admin" && <AdminPage />}
     {route.kind === "survey" && <SurveyPage access={route.access} />}
