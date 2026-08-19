@@ -29,6 +29,7 @@
 html {
   min-width: 320px;
   background: var(--paper);
+  overflow-x: hidden;
 }
 
 body {
