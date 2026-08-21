@@ -6,9 +6,7 @@ const env = {
   ...process.env,
   NODE_ENV: "test",
   DATABASE_URL: "postgresql://127.0.0.1:1/meeting_feedback",
-  MIGRATION_DATABASE_URL: "postgresql://127.0.0.1:2/meeting_feedback",
-  ADMIN_PASSPHRASE: "test-admin-passphrase",
-  SESSION_SECRET: "test-session-secret-at-least-32-characters"
+  MIGRATION_DATABASE_URL: "postgresql://127.0.0.1:2/meeting_feedback"
 };
 
 function runPnpm(args: string[]) {

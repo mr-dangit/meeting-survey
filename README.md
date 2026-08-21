@@ -17,8 +17,6 @@ Copy `.env.example` to `.env.local` and provide:
 
 - `DATABASE_URL`: Supabase transaction-pooler URL using encrypted transport;
 - `MIGRATION_DATABASE_URL`: Supabase direct or session-mode URL;
-- `ADMIN_PASSPHRASE`: at least 12 characters;
-- `SESSION_SECRET`: at least 32 random characters;
 - `NODE_ENV`: `development` locally or `production` on Vercel.
 
 Never commit either environment file or print its values.
@@ -44,7 +42,7 @@ npx vercel@latest env pull .env.local
 npx vercel@latest --prod
 ```
 
-Add `DATABASE_URL`, `ADMIN_PASSPHRASE`, and `SESSION_SECRET` to Vercel Preview and Production. Keep all values server-side. Migrations are applied separately through the Supabase connector or a trusted machine using `MIGRATION_DATABASE_URL`; the migration credential is not required by the deployed application.
+Add `DATABASE_URL` to Vercel Preview and Production. Keep all values server-side. Migrations are applied separately through the Supabase connector or a trusted machine using `MIGRATION_DATABASE_URL`; the migration credential is not required by the deployed application.
 
 The application uses hash routes, so access secrets are not sent in HTTP request URLs:
 
@@ -52,9 +50,11 @@ The application uses hash routes, so access secrets are not sent in HTTP request
 - `/#/survey/<shared-secret>`
 - `/#/report/<private-secret>`
 
-Meeting access secrets are stored on the `meetings` row alongside their lookup hashes, so an administrator can reopen a saved meeting and retrieve its links. They are returned only to a logged-in administrator through `GET /api/admin/meetings/:id/access`; the meeting list itself never carries them. Meetings created before this change keep only the hashes, so their links cannot be shown.
+Meeting access secrets are stored on the `meetings` row alongside their lookup hashes, so an administrator can reopen a saved meeting and retrieve its links. They are returned through `GET /api/admin/meetings/:id/access`; the meeting list itself never carries them. Meetings created before this change keep only the hashes, so their links cannot be shown.
 
 ## Privacy and MVP limits
+
+The `/#/admin` screen and the `/api/admin/*` routes are open in this testing build: there is no administrator login, so anyone who can reach the deployment can create meetings and read any meeting's access links. This is acceptable only because the build holds no real data. Restore authentication before pointing it at a production database.
 
 Responses store only three 1–5 scores, an optional comment, meeting ID, response ID, and submission time. They do not store attendee identity, access secrets, IP addresses, browser fingerprints, or user-agent strings.
 

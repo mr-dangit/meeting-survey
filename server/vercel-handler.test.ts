@@ -31,12 +31,12 @@ describe("createVercelHandler", () => {
       server: { emit }
     } as unknown as FastifyInstance;
     const handler = createVercelHandler(async () => app);
-    const request = { url: "/api/server?path=admin%2Fsession" } as IncomingMessage;
+    const request = { url: "/api/server?path=admin%2Fmeetings" } as IncomingMessage;
     const response = {} as ServerResponse;
 
     await handler(request, response);
 
-    expect(request.url).toBe("/api/admin/session");
+    expect(request.url).toBe("/api/admin/meetings");
     expect(emit).toHaveBeenCalledWith("request", request, response);
   });
 });

@@ -1,4 +1,3 @@
-import cookie from "@fastify/cookie";
 import staticPlugin from "@fastify/static";
 import Fastify, { type FastifyInstance } from "fastify";
 import type { AppConfig } from "./config.js";
@@ -26,10 +25,8 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
     }
   });
 
-  await app.register(cookie, { secret: options.config.sessionSecret });
-
   app.get("/api/health", async () => ({ status: "ok" }));
-  await registerAdminRoutes(app, { config: options.config, meetings: options.meetings });
+  await registerAdminRoutes(app, { meetings: options.meetings });
   await registerSurveyRoutes(app, { meetings: options.meetings, responses: options.responses });
   await registerReportRoutes(app, { meetings: options.meetings, responses: options.responses });
 

@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 
 vi.mock("./api", () => ({
+  ApiError: class ApiError extends Error {},
+  listMeetings: vi.fn(() => new Promise(() => {})),
   getSurvey: vi.fn(() => new Promise(() => {})),
   getReport: vi.fn(() => new Promise(() => {}))
 }));
@@ -13,7 +15,7 @@ describe("application routing", () => {
   it("renders administration from the hash route", () => {
     window.location.hash = "#/admin";
     const { container } = render(<App />);
-    expect(screen.getByRole("heading", { name: "Meeting feedback administration" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Set up a meeting" })).toBeInTheDocument();
     expect(screen.getByRole("banner")).toBeInTheDocument();
     expect(screen.getByAltText("Dymon Asia Capital")).toBeInTheDocument();
     expect(container.querySelector(".page-rule")).toBeInTheDocument();

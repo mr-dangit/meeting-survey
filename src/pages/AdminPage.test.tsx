@@ -1,14 +1,13 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AdminPage } from "./AdminPage";
-import { createMeeting, getMeetingAccess, listMeetings, login, setMeetingStatus } from "../api";
+import { createMeeting, getMeetingAccess, listMeetings, setMeetingStatus } from "../api";
 
 vi.mock("../api", () => ({
   ApiError: class ApiError extends Error {},
   createMeeting: vi.fn(),
   getMeetingAccess: vi.fn(),
   listMeetings: vi.fn(),
-  login: vi.fn(),
   setMeetingStatus: vi.fn()
 }));
 
@@ -22,19 +21,12 @@ const meeting = {
   hasAccessLinks: true
 };
 
-function signIn() {
-  render(<AdminPage />);
-  fireEvent.change(screen.getByLabelText(/administrator passphrase/i), { target: { value: "correct-passphrase" } });
-  fireEvent.click(screen.getByRole("button", { name: /log in/i }));
-}
-
 describe("AdminPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(login).mockResolvedValue(undefined);
   });
 
-  it("renders the restored administrator shell and creates meeting links", async () => {
+  it("loads the meeting list without a login step and creates meeting links", async () => {
     vi.mocked(listMeetings).mockResolvedValue([]);
     vi.mocked(createMeeting).mockResolvedValue({
       meeting,
@@ -43,11 +35,11 @@ describe("AdminPage", () => {
     });
     render(<AdminPage />);
 
-    expect(screen.getByRole("heading", { name: /meeting feedback administration/i })).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText(/administrator passphrase/i), { target: { value: "correct-passphrase" } });
-    fireEvent.click(screen.getByRole("button", { name: /log in/i }));
-    expect(await screen.findByRole("heading", { name: /set up a meeting/i })).toBeInTheDocument();
-    expect(screen.getByText(/no meetings yet/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /set up a meeting/i })).toBeInTheDocument();
+    expect(screen.queryByLabelText(/passphrase/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /log in/i })).not.toBeInTheDocument();
+    await waitFor(() => expect(listMeetings).toHaveBeenCalled());
+    expect(await screen.findByText(/no meetings yet/i)).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText(/meeting title/i), { target: { value: meeting.title } });
     fireEvent.change(screen.getByLabelText(/chair label/i), { target: { value: meeting.chairLabel } });
@@ -63,7 +55,7 @@ describe("AdminPage", () => {
   it("closes an open meeting from the meeting list", async () => {
     vi.mocked(listMeetings).mockResolvedValue([meeting]);
     vi.mocked(setMeetingStatus).mockResolvedValue({ ...meeting, status: "closed" });
-    signIn();
+    render(<AdminPage />);
 
     expect(await screen.findByRole("button", { name: /close survey/i })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /close survey/i }));
@@ -78,7 +70,7 @@ describe("AdminPage", () => {
       surveyAccess: "saved-survey-secret",
       reportAccess: "saved-report-secret"
     });
-    signIn();
+    render(<AdminPage />);
 
     const show = await screen.findByRole("button", { name: "Show links" });
     expect(screen.queryByRole("link", { name: /open attendee survey/i })).not.toBeInTheDocument();
@@ -96,11 +88,18 @@ describe("AdminPage", () => {
 
   it("explains when a meeting predates stored access links", async () => {
     vi.mocked(listMeetings).mockResolvedValue([{ ...meeting, hasAccessLinks: false }]);
-    signIn();
+    render(<AdminPage />);
 
     fireEvent.click(await screen.findByRole("button", { name: "Show links" }));
 
     expect(getMeetingAccess).not.toHaveBeenCalled();
     expect(await screen.findByRole("alert")).toHaveTextContent(/cannot be shown/i);
+  });
+
+  it("surfaces a failure to load the meeting list", async () => {
+    vi.mocked(listMeetings).mockRejectedValue(new Error("network down"));
+    render(<AdminPage />);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(/could not be loaded/i);
   });
 });

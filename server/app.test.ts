@@ -19,9 +19,7 @@ describe("server foundation", () => {
       config: {
         nodeEnv: "test",
         port: 3001,
-        databaseUrl: "postgresql://unused",
-        adminPassphrase: "test-admin-passphrase",
-        sessionSecret: "test-session-secret-at-least-32-characters"
+        databaseUrl: "postgresql://unused"
       },
       meetings: repositories.meetings,
       responses: repositories.responses
@@ -32,12 +30,9 @@ describe("server foundation", () => {
 
     expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual({ status: "ok" });
-    expect(response.body).not.toContain("test-admin-passphrase");
   });
 
-  it("rejects missing production secrets", () => {
-    expect(() => loadConfig({ NODE_ENV: "production", DATABASE_URL: "postgresql://db" })).toThrow(
-      /ADMIN_PASSPHRASE/
-    );
+  it("rejects a missing database connection", () => {
+    expect(() => loadConfig({ NODE_ENV: "production" })).toThrow(/DATABASE_URL/);
   });
 });

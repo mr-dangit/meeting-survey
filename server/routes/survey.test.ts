@@ -7,9 +7,7 @@ import { createTestDatabase } from "../testing/database.js";
 const config = {
   nodeEnv: "test" as const,
   port: 3001,
-  databaseUrl: "postgresql://unused",
-  adminPassphrase: "test-admin-passphrase",
-  sessionSecret: "test-session-secret-at-least-32-characters"
+  databaseUrl: "postgresql://unused"
 };
 
 describe("survey routes", () => {

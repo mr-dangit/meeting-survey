@@ -24,10 +24,6 @@ async function request<T>(url: string, init: RequestInit = {}): Promise<T> {
   return body as T;
 }
 
-export const login = (passphrase: string) => request<void>("/api/admin/session", {
-  method: "POST", body: JSON.stringify({ passphrase })
-});
-export const logout = () => request<void>("/api/admin/session", { method: "DELETE" });
 export const listMeetings = () => request<AdminMeeting[]>("/api/admin/meetings");
 export const createMeeting = (input: CreateMeetingInput) =>
   request<{ meeting: AdminMeeting; surveyAccess: string; reportAccess: string }>("/api/admin/meetings", {

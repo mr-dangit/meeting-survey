@@ -1846,15 +1846,6 @@ a:focus-visible,
   margin-top: 4px;
 }
 
-.login-panel .admin-form {
-  max-width: 500px;
-  grid-template-columns: 1fr;
-}
-
-.login-panel .admin-form .primary-button {
-  grid-column: auto;
-}
-
 .form-error {
   margin: 17px 0 0;
   color: var(--error);

@@ -1,10 +1,10 @@
-import { useState, type FormEvent } from "react";
-import { ApiError, createMeeting, getMeetingAccess, listMeetings, login, setMeetingStatus } from "../api";
+import { useEffect, useState, type FormEvent } from "react";
+import { ApiError, createMeeting, getMeetingAccess, listMeetings, setMeetingStatus } from "../api";
 import type { AdminMeeting, MeetingAccess } from "../types";
 
 export function AdminPage() {
-  const [authenticated, setAuthenticated] = useState(false);
   const [meetings, setMeetings] = useState<AdminMeeting[]>([]);
+  const [loading, setLoading] = useState(true);
   const [created, setCreated] = useState<{ surveyAccess: string; reportAccess: string } | null>(null);
   const [error, setError] = useState("");
   const [savingId, setSavingId] = useState("");
@@ -13,18 +13,22 @@ export function AdminPage() {
   const [accessError, setAccessError] = useState<Record<string, string>>({});
   const [loadingAccessId, setLoadingAccessId] = useState("");
 
-  async function handleLogin(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    try {
-      await login(String(form.get("passphrase") ?? ""));
-      setMeetings(await listMeetings());
-      setAuthenticated(true);
-      setError("");
-    } catch (reason) {
-      setError(reason instanceof ApiError ? reason.message : "Login failed.");
-    }
-  }
+  useEffect(() => {
+    let active = true;
+    listMeetings()
+      .then((result) => {
+        if (active) setMeetings(result);
+      })
+      .catch((reason: unknown) => {
+        if (active) setError(reason instanceof ApiError ? reason.message : "Meetings could not be loaded.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   async function handleCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -91,23 +95,6 @@ export function AdminPage() {
   const link = (kind: "survey" | "report", access: string) =>
     `${window.location.origin}/#/${kind}/${encodeURIComponent(access)}`;
 
-  if (!authenticated) {
-    return <main className="content-wrap admin-layout" aria-labelledby="admin-login-heading">
-      <section className="admin-intro">
-        <p className="eyebrow">Meeting feedback administration</p>
-        <h1 id="admin-login-heading">Meeting feedback administration</h1>
-        <p className="intro-copy">Create a private survey link and a chair report for each meeting.</p>
-      </section>
-      <section className="admin-panel login-panel" aria-label="Administrator login">
-        <form className="admin-form" onSubmit={handleLogin}>
-          <label htmlFor="passphrase">Administrator passphrase<input id="passphrase" name="passphrase" type="password" required /></label>
-          <button className="primary-button" type="submit">Log in <span aria-hidden="true">→</span></button>
-          {error ? <p role="alert" className="form-error">{error}</p> : null}
-        </form>
-      </section>
-    </main>;
-  }
-
   return <main className="content-wrap admin-layout" aria-labelledby="admin-heading">
     <section className="admin-intro">
       <p className="eyebrow">Meeting feedback administration</p>
@@ -134,7 +121,8 @@ export function AdminPage() {
     </section> : null}
     <section className="admin-meetings" aria-labelledby="meetings-heading">
       <div className="section-heading-row"><div><p className="eyebrow">Saved meetings</p><h2 id="meetings-heading">Meeting list</h2></div><span className="section-count">{meetings.length} meetings</span></div>
-      {meetings.length === 0 ? <p className="empty-state">No meetings yet.</p> : meetings.map((meeting) => {
+      {loading ? <p className="empty-state">Loading meetings…</p> : null}
+      {!loading && meetings.length === 0 ? <p className="empty-state">No meetings yet.</p> : meetings.map((meeting) => {
         const expanded = openId === meeting.id;
         const links = access[meeting.id];
         const failure = accessError[meeting.id];

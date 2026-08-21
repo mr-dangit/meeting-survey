@@ -5,9 +5,7 @@ import { createTestDatabase } from "../testing/database.js";
 const config = {
   nodeEnv: "test" as const,
   port: 3001,
-  databaseUrl: "postgresql://unused",
-  adminPassphrase: "test-admin-passphrase",
-  sessionSecret: "test-session-secret-at-least-32-characters"
+  databaseUrl: "postgresql://unused"
 };
 
 describe("administrator routes", () => {
@@ -28,33 +26,22 @@ describe("administrator routes", () => {
     await repositories.pool.end();
   });
 
-  async function login(): Promise<string> {
-    const response = await app.inject({
-      method: "POST",
-      url: "/api/admin/session",
-      payload: { passphrase: config.adminPassphrase }
-    });
-
-    expect(response.statusCode).toBe(204);
-    return response.cookies.find((item) => item.name === "admin_session")!.value;
-  }
-
-  it("requires login and creates unrelated access secrets", async () => {
-    const unauthenticated = await app.inject({ method: "GET", url: "/api/admin/meetings" });
-    expect(unauthenticated.statusCode).toBe(401);
-
-    const cookie = await login();
-    const created = await app.inject({
+  function createMeeting(payload: Record<string, unknown> = {}) {
+    return app.inject({
       method: "POST",
       url: "/api/admin/meetings",
-      cookies: { admin_session: cookie },
       payload: {
         title: "Weekly investment review",
         chairLabel: "Meeting chair",
         meetingAt: "2026-08-18T08:00:00.000Z",
-        invitedCount: 5
+        invitedCount: 5,
+        ...payload
       }
     });
+  }
+
+  it("creates unrelated access secrets without a login", async () => {
+    const created = await createMeeting();
 
     expect(created.statusCode).toBe(201);
     const body = created.json();
@@ -66,61 +53,28 @@ describe("administrator routes", () => {
     expect(stored.reportSecret).toBe(body.reportAccess);
   });
 
-  it("rejects invalid passphrases and clears the administrator session on logout", async () => {
-    const invalid = await app.inject({
+  it("no longer exposes an administrator session endpoint", async () => {
+    const login = await app.inject({
       method: "POST",
       url: "/api/admin/session",
-      payload: { passphrase: "wrong-admin-passphrase" }
+      payload: { passphrase: "anything" }
     });
-    expect(invalid.statusCode).toBe(401);
+    expect(login.statusCode).toBe(404);
 
-    const cookie = await login();
-    const logout = await app.inject({
-      method: "DELETE",
-      url: "/api/admin/session",
-      cookies: { admin_session: cookie }
-    });
-    expect(logout.statusCode).toBe(204);
-    expect(logout.headers["set-cookie"]).toContain("Max-Age=0");
+    const logout = await app.inject({ method: "DELETE", url: "/api/admin/session" });
+    expect(logout.statusCode).toBe(404);
   });
 
   it("rejects invalid invited counts", async () => {
-    const cookie = await login();
-    const response = await app.inject({
-      method: "POST",
-      url: "/api/admin/meetings",
-      cookies: { admin_session: cookie },
-      payload: {
-        title: "Weekly investment review",
-        chairLabel: "Meeting chair",
-        meetingAt: "2026-08-18T08:00:00.000Z",
-        invitedCount: 0
-      }
-    });
+    const response = await createMeeting({ invitedCount: 0 });
 
     expect(response.statusCode).toBe(400);
   });
 
   it("lists only the administrator meeting view model", async () => {
-    const cookie = await login();
-    const created = await app.inject({
-      method: "POST",
-      url: "/api/admin/meetings",
-      cookies: { admin_session: cookie },
-      payload: {
-        title: "Weekly investment review",
-        chairLabel: "Meeting chair",
-        meetingAt: "2026-08-18T08:00:00.000Z",
-        invitedCount: 5
-      }
-    });
-    const body = created.json();
+    const body = (await createMeeting()).json();
 
-    const listed = await app.inject({
-      method: "GET",
-      url: "/api/admin/meetings",
-      cookies: { admin_session: cookie }
-    });
+    const listed = await app.inject({ method: "GET", url: "/api/admin/meetings" });
 
     expect(listed.statusCode).toBe(200);
     expect(listed.json()).toEqual([
@@ -140,30 +94,11 @@ describe("administrator routes", () => {
   });
 
   it("returns the stored access links for a saved meeting", async () => {
-    const cookie = await login();
-    const created = await app.inject({
-      method: "POST",
-      url: "/api/admin/meetings",
-      cookies: { admin_session: cookie },
-      payload: {
-        title: "Weekly investment review",
-        chairLabel: "Meeting chair",
-        meetingAt: "2026-08-18T08:00:00.000Z",
-        invitedCount: 5
-      }
-    });
-    const body = created.json();
-
-    const anonymous = await app.inject({
-      method: "GET",
-      url: `/api/admin/meetings/${body.meeting.id}/access`
-    });
-    expect(anonymous.statusCode).toBe(401);
+    const body = (await createMeeting()).json();
 
     const access = await app.inject({
       method: "GET",
-      url: `/api/admin/meetings/${body.meeting.id}/access`,
-      cookies: { admin_session: cookie }
+      url: `/api/admin/meetings/${body.meeting.id}/access`
     });
     expect(access.statusCode).toBe(200);
     expect(access.json()).toEqual({
@@ -173,31 +108,17 @@ describe("administrator routes", () => {
 
     const missing = await app.inject({
       method: "GET",
-      url: "/api/admin/meetings/10000000-0000-4000-8000-000000000009/access",
-      cookies: { admin_session: cookie }
+      url: "/api/admin/meetings/10000000-0000-4000-8000-000000000009/access"
     });
     expect(missing.statusCode).toBe(404);
   });
 
   it("closes and reopens a meeting", async () => {
-    const cookie = await login();
-    const created = await app.inject({
-      method: "POST",
-      url: "/api/admin/meetings",
-      cookies: { admin_session: cookie },
-      payload: {
-        title: "Weekly investment review",
-        chairLabel: "Meeting chair",
-        meetingAt: "2026-08-18T08:00:00.000Z",
-        invitedCount: 5
-      }
-    });
-    const id = created.json().meeting.id;
+    const id = (await createMeeting()).json().meeting.id;
 
     const closed = await app.inject({
       method: "PATCH",
       url: `/api/admin/meetings/${id}/status`,
-      cookies: { admin_session: cookie },
       payload: { status: "closed" }
     });
     expect(closed.statusCode).toBe(200);
@@ -206,30 +127,9 @@ describe("administrator routes", () => {
     const reopened = await app.inject({
       method: "PATCH",
       url: `/api/admin/meetings/${id}/status`,
-      cookies: { admin_session: cookie },
       payload: { status: "open" }
     });
     expect(reopened.statusCode).toBe(200);
     expect(reopened.json()).toEqual(expect.objectContaining({ id, status: "open" }));
-  });
-
-  it("uses signed strict secure cookies in production", async () => {
-    const productionApp = await buildApp({
-      config: { ...config, nodeEnv: "production" },
-      meetings: repositories.meetings,
-      responses: repositories.responses
-    });
-    try {
-      const response = await productionApp.inject({
-        method: "POST",
-        url: "/api/admin/session",
-        payload: { passphrase: config.adminPassphrase }
-      });
-
-      expect(response.statusCode).toBe(204);
-      expect(response.headers["set-cookie"]).toMatch(/admin_session=authenticated\.[^;]+; Path=\/; HttpOnly; Secure; SameSite=Strict/);
-    } finally {
-      await productionApp.close();
-    }
   });
 });

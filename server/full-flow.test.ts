@@ -8,9 +8,7 @@ import { createTestDatabase } from "./testing/database.js";
 const config = {
   nodeEnv: "test" as const,
   port: 3001,
-  databaseUrl: "postgresql://unused",
-  adminPassphrase: "test-admin-passphrase",
-  sessionSecret: "test-session-secret-at-least-32-characters"
+  databaseUrl: "postgresql://unused"
 };
 
 describe("complete meeting feedback flow", () => {
@@ -28,18 +26,9 @@ describe("complete meeting feedback flow", () => {
       await rm(staticRoot, { recursive: true, force: true });
     });
 
-    const login = await app.inject({
-      method: "POST",
-      url: "/api/admin/session",
-      payload: { passphrase: config.adminPassphrase }
-    });
-    const session = login.cookies.find((cookie) => cookie.name === "admin_session")?.value;
-    expect(session).toBeTruthy();
-
     const created = await app.inject({
       method: "POST",
       url: "/api/admin/meetings",
-      cookies: { admin_session: session! },
       payload: {
         title: "Weekly investment review",
         chairLabel: "Meeting chair",
@@ -110,7 +99,6 @@ describe("complete meeting feedback flow", () => {
     await app.inject({
       method: "PATCH",
       url: `/api/admin/meetings/${meeting.id}/status`,
-      cookies: { admin_session: session! },
       payload: { status: "closed" }
     });
     const rejected = await app.inject({
