@@ -1,4 +1,6 @@
-import { defineConfig } from "vite";
+// `defineConfig` comes from vitest/config, not vite: the `test` block below is not part of Vite's
+// own config type, so importing it from "vite" leaves this file unchecked.
+import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({

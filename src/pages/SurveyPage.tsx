@@ -22,14 +22,25 @@ export function SurveyPage({ access }: { access: string }) {
   const [saving, setSaving] = useState(false);
   const refs = useRef<Partial<Record<RatingQuestionId, HTMLFieldSetElement>>>({});
 
+  // Moving to another survey link has to start from a clean form: without the reset the previous
+  // meeting's answers and receipt stay on screen, and a late-resolving earlier fetch would
+  // overwrite the newer meeting.
   useEffect(() => {
+    let active = true;
+    setState("loading");
+    setAnswers(initial);
+    setErrors({});
+    setMessage("");
     void getSurvey(access).then((result) => {
+      if (!active) return;
       setMeeting(result);
       setState("ready");
     }).catch((reason) => {
+      if (!active) return;
       setState(reason instanceof ApiError && reason.status === 404 ? "invalid" : "error");
       setMessage(reason instanceof Error ? reason.message : "The survey could not be loaded. Please try again.");
     });
+    return () => { active = false; };
   }, [access]);
 
   async function submit(event: FormEvent) {

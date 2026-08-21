@@ -6,22 +6,28 @@ export function ReportPage({ access }: { access: string }) {
   const [report, setReport] = useState<ReportView | null>(null);
   const [state, setState] = useState<"loading" | "invalid" | "error" | "ready">("loading");
   const [message, setMessage] = useState("");
+  const [attempt, setAttempt] = useState(0);
 
-  const load = () => {
+  // `active` discards a superseded request: when the hash moves to another report link the previous
+  // fetch can still be in flight, and resolving late would overwrite the newer report.
+  useEffect(() => {
+    let active = true;
     setState("loading");
     void getReport(access).then((result) => {
+      if (!active) return;
       setReport(result);
       setState("ready");
     }).catch((reason) => {
+      if (!active) return;
       setState(reason instanceof ApiError && reason.status === 404 ? "invalid" : "error");
       setMessage(reason instanceof Error ? reason.message : "The report could not be loaded. Please try again.");
     });
-  };
-  useEffect(load, [access]);
+    return () => { active = false; };
+  }, [access, attempt]);
 
   if (state === "loading") return <main><p>Loading report…</p></main>;
   if (state === "invalid") return <main><h1>This report link is invalid.</h1></main>;
-  if (state === "error") return <main><p role="alert">{message}</p><button type="button" onClick={load}>Try again</button></main>;
+  if (state === "error") return <main><p role="alert">{message}</p><button type="button" onClick={() => setAttempt((count) => count + 1)}>Try again</button></main>;
   if (report?.status === "threshold_not_met") {
     return <main className="content-wrap report-layout" aria-labelledby="report-heading">
       <section className="report-intro threshold-state">

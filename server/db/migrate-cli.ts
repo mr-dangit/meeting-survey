@@ -10,8 +10,12 @@ async function main(): Promise<void> {
   try {
     await runMigrations(pool);
   } finally {
-    await pool.end();
+    // A failure closing the pool must not mask why the migration itself failed.
+    await pool.end().catch(() => undefined);
   }
 }
 
-void main();
+void main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

@@ -30,10 +30,18 @@ export function createVercelHandler(
   let appPromise: Promise<FastifyInstance> | undefined;
 
   return async (request: IncomingMessage, response: ServerResponse): Promise<void> => {
-    appPromise ??= loadApp().then(async (app) => {
-      await app.ready();
-      return app;
-    });
+    // Cache the app across invocations on a warm instance, but never cache a failure: a rejected
+    // promise kept here would make one transient start-up error (database unreachable, missing
+    // environment variable) permanent for the life of the instance.
+    appPromise ??= loadApp()
+      .then(async (app) => {
+        await app.ready();
+        return app;
+      })
+      .catch((error: unknown) => {
+        appPromise = undefined;
+        throw error;
+      });
     const app = await appPromise;
     restoreRewrittenApiPath(request);
     app.server.emit("request", request, response);
