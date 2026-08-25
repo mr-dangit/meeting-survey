@@ -56,4 +56,13 @@ export async function registerAdminRoutes(app: FastifyInstance, options: AdminRo
     if (!meeting) return reply.code(404).send({ error: "Meeting not found." });
     return meeting;
   });
+
+  app.delete("/api/admin/meetings/:id", async (request, reply) => {
+    const params = idSchema.safeParse(request.params);
+    if (!params.success) return reply.code(400).send({ error: "Check the meeting reference and try again." });
+
+    const deleted = await service.delete(params.data.id);
+    if (!deleted) return reply.code(404).send({ error: "Meeting not found." });
+    return reply.code(204).send();
+  });
 }

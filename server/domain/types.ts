@@ -20,12 +20,12 @@ export type AnonymousResponse = {
   meetingId: string;
   usefulness: number;
   actionability: number;
-  reInvite: number;
+  necessity: number;
   comment: string;
   submittedAt: Date;
 };
 
-export type ReportQuestionId = "usefulness" | "actionability" | "reInvite";
+export type ReportQuestionId = "usefulness" | "actionability" | "necessity";
 export type ReportDistributionPoint = { rating: 1 | 2 | 3 | 4 | 5; count: number };
 export type ReportQuestion = {
   id: ReportQuestionId;

@@ -1,4 +1,5 @@
 import type { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { z } from "zod";
 import type { MeetingRepository, ResponseRepository } from "../domain/repositories.js";
 import {
   submissionSchema,
@@ -6,6 +7,8 @@ import {
   SurveyNotFoundError,
   SurveyService
 } from "../services/survey-service.js";
+
+const responseIdSchema = z.object({ id: z.string().uuid() }).strict();
 
 type SurveyRoutesOptions = {
   meetings: MeetingRepository;
@@ -61,6 +64,26 @@ export async function registerSurveyRoutes(app: FastifyInstance, options: Survey
       try {
         const result = await service.submit(surveyAccess(request.headers), parsed.data);
         return reply.code(201).send(result);
+      } catch (error) {
+        return sendSurveyError(error, reply);
+      }
+    }
+  );
+
+  // Revising a response the submitter already filed. Without this the receipt's "Edit response"
+  // could only POST again, which filed a second response and double-counted that attendee.
+  app.put(
+    "/api/survey/responses/:id",
+    { errorHandler: handleSurveySubmissionError },
+    async (request, reply) => {
+      const params = responseIdSchema.safeParse(request.params);
+      const parsed = submissionSchema.safeParse(request.body);
+      if (!params.success || !parsed.success) {
+        return reply.code(400).send({ error: "Check the survey answers and try again." });
+      }
+
+      try {
+        return await service.revise(surveyAccess(request.headers), params.data.id, parsed.data);
       } catch (error) {
         return sendSurveyError(error, reply);
       }

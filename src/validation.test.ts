@@ -4,7 +4,7 @@ import { validateSurvey } from "./validation";
 const emptyAnswers = {
   usefulness: null,
   actionability: null,
-  reInvite: null,
+  necessity: null,
   comment: ""
 };
 
@@ -13,7 +13,7 @@ describe("validateSurvey", () => {
     expect(validateSurvey(emptyAnswers)).toEqual({
       usefulness: "Please select a rating.",
       actionability: "Please select a rating.",
-      reInvite: "Please select a rating."
+      necessity: "Please select a rating."
     });
   });
 
@@ -22,7 +22,7 @@ describe("validateSurvey", () => {
       validateSurvey({
         usefulness: 5,
         actionability: null,
-        reInvite: 4,
+        necessity: 4,
         comment: "A little more time for questions would help."
       })
     ).toEqual({ actionability: "Please select a rating." });
@@ -33,7 +33,7 @@ describe("validateSurvey", () => {
       validateSurvey({
         usefulness: 4,
         actionability: 3,
-        reInvite: 5,
+        necessity: 5,
         comment: "Clear discussion and helpful next steps."
       })
     ).toEqual({});
@@ -41,10 +41,10 @@ describe("validateSurvey", () => {
 });
 
 it("rejects out-of-range ratings and oversized comments", () => {
-  expect(validateSurvey({ usefulness: 0, actionability: 6, reInvite: 2.5, comment: "x".repeat(1001) })).toEqual({
+  expect(validateSurvey({ usefulness: 0, actionability: 6, necessity: 2.5, comment: "x".repeat(1001) })).toEqual({
     usefulness: "Please select a rating.",
     actionability: "Please select a rating.",
-    reInvite: "Please select a rating.",
+    necessity: "Please select a rating.",
     comment: "Keep the comment to 1,000 characters or fewer."
   });
 });

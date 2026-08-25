@@ -3,6 +3,9 @@ import type { SurveyAnswers, SurveyContext } from "../types";
 type Props = {
   meeting: SurveyContext;
   answers: SurveyAnswers;
+  // True once the visitor has edited an already-filed response, so the receipt can confirm the
+  // answers were replaced rather than leaving them wondering whether they submitted twice.
+  revised?: boolean;
   onEdit: () => void;
 };
 
@@ -15,13 +18,13 @@ function formatMeetingContext(meeting: SurveyContext) {
   return `${date} · ${meeting.chairLabel}`;
 }
 
-const receiptQuestions: Array<{ id: keyof Pick<SurveyAnswers, "usefulness" | "actionability" | "reInvite">; label: string }> = [
-  { id: "usefulness", label: "Meeting usefulness" },
-  { id: "actionability", label: "Actionable follow-up" },
-  { id: "reInvite", label: "Would attend again" }
+const receiptQuestions: Array<{ id: keyof Pick<SurveyAnswers, "usefulness" | "actionability" | "necessity">; label: string }> = [
+  { id: "usefulness", label: "Progress toward goals" },
+  { id: "actionability", label: "Clarity of next steps" },
+  { id: "necessity", label: "Meeting was necessary" }
 ];
 
-export function SurveyReceipt({ meeting, answers, onEdit }: Props) {
+export function SurveyReceipt({ meeting, answers, revised = false, onEdit }: Props) {
   return (
     <main className="content-wrap receipt-layout" aria-labelledby="receipt-heading">
       <section className="receipt-card">
@@ -29,8 +32,10 @@ export function SurveyReceipt({ meeting, answers, onEdit }: Props) {
           <span className="success-mark" aria-hidden="true">✓</span>
           <span className="eyebrow">Recorded anonymously</span>
         </div>
-        <h1 id="receipt-heading">Feedback received</h1>
-        <p className="receipt-copy">Thank you for taking a moment to help make the next meeting more valuable.</p>
+        <h1 id="receipt-heading">{revised ? "Feedback updated" : "Feedback received"}</h1>
+        <p className="receipt-copy">{revised
+          ? "Your earlier answers have been replaced with the ones below. Only one response is counted for you."
+          : "Thank you for taking a moment to help make the next meeting more valuable."}</p>
 
         <section className="receipt-context" aria-label="Submitted meeting context">
           <span>{meeting.title}</span>

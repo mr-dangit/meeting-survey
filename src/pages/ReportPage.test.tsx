@@ -27,7 +27,7 @@ describe("ReportPage", () => {
       questions: [
         { id: "usefulness", prompt: "How useful was this meeting?", average: 4, distribution: [{ rating: 1, count: 0 }, { rating: 2, count: 0 }, { rating: 3, count: 1 }, { rating: 4, count: 1 }, { rating: 5, count: 1 }] },
         { id: "actionability", prompt: "Did you leave with actionable ideas?", average: 3.33, distribution: [{ rating: 1, count: 0 }, { rating: 2, count: 1 }, { rating: 3, count: 1 }, { rating: 4, count: 0 }, { rating: 5, count: 1 }] },
-        { id: "reInvite", prompt: "Would you want to be invited again?", average: 4, distribution: [{ rating: 1, count: 0 }, { rating: 2, count: 0 }, { rating: 3, count: 0 }, { rating: 4, count: 3 }, { rating: 5, count: 0 }] }
+        { id: "necessity", prompt: "Would you want to be invited again?", average: 4, distribution: [{ rating: 1, count: 0 }, { rating: 2, count: 0 }, { rating: 3, count: 0 }, { rating: 4, count: 3 }, { rating: 5, count: 0 }] }
       ],
       comments: ["Useful discussion."]
     });

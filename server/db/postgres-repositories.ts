@@ -1,7 +1,8 @@
 import type {
   DbPool,
   MeetingRepository,
-  ResponseRepository
+  ResponseRepository,
+  ResponseRevision
 } from "../domain/repositories.js";
 import type { AnonymousResponse, Meeting, MeetingStatus } from "../domain/types.js";
 
@@ -25,7 +26,7 @@ type ResponseRow = {
   meeting_id: string;
   usefulness: number;
   actionability: number;
-  re_invite: number;
+  necessity: number;
   comment: string;
   submitted_at: Date | string;
 };
@@ -57,7 +58,7 @@ function mapResponse(row: ResponseRow): AnonymousResponse {
     meetingId: row.meeting_id,
     usefulness: row.usefulness,
     actionability: row.actionability,
-    reInvite: row.re_invite,
+    necessity: row.necessity,
     comment: row.comment,
     submittedAt: asDate(row.submitted_at)
   };
@@ -123,6 +124,16 @@ export class PostgresMeetingRepository implements MeetingRepository {
     );
     return result.rows[0] ? mapMeeting(result.rows[0]) : null;
   }
+
+  async delete(id: string): Promise<boolean> {
+    // `returning id` rather than a rowCount check: pg-mem and pg report affected rows differently
+    // for deletes, and a returned row is unambiguous in both.
+    const result = await this.pool.query<{ id: string }>(
+      "delete from meetings where id = $1 returning id",
+      [id]
+    );
+    return result.rows.length > 0;
+  }
 }
 
 export class PostgresResponseRepository implements ResponseRepository {
@@ -131,7 +142,7 @@ export class PostgresResponseRepository implements ResponseRepository {
   async create(input: AnonymousResponse): Promise<AnonymousResponse> {
     const result = await this.pool.query<ResponseRow>(
       `insert into responses
-       (id, meeting_id, usefulness, actionability, re_invite, comment, submitted_at)
+       (id, meeting_id, usefulness, actionability, necessity, comment, submitted_at)
        values ($1, $2, $3, $4, $5, $6, $7)
        returning *`,
       [
@@ -139,12 +150,34 @@ export class PostgresResponseRepository implements ResponseRepository {
         input.meetingId,
         input.usefulness,
         input.actionability,
-        input.reInvite,
+        input.necessity,
         input.comment,
         input.submittedAt
       ]
     );
     return mapResponse(result.rows[0]);
+  }
+
+  async update(
+    id: string,
+    meetingId: string,
+    revision: ResponseRevision
+  ): Promise<AnonymousResponse | null> {
+    const result = await this.pool.query<ResponseRow>(
+      `update responses
+       set usefulness = $1, actionability = $2, necessity = $3, comment = $4
+       where id = $5 and meeting_id = $6
+       returning *`,
+      [
+        revision.usefulness,
+        revision.actionability,
+        revision.necessity,
+        revision.comment,
+        id,
+        meetingId
+      ]
+    );
+    return result.rows[0] ? mapResponse(result.rows[0]) : null;
   }
 
   async listForMeeting(meetingId: string): Promise<AnonymousResponse[]> {

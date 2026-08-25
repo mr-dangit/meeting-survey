@@ -7,9 +7,9 @@ import type {
 } from "./types.js";
 
 const questions: Array<{ id: ReportQuestionId; prompt: string }> = [
-  { id: "usefulness", prompt: "How useful was this meeting in helping you achieve your goals?" },
-  { id: "actionability", prompt: "Did you leave with actionable ideas or clear follow-up tasks?" },
-  { id: "reInvite", prompt: "Would you want to be invited to this meeting again?" }
+  { id: "usefulness", prompt: "To what extent did this meeting help you make progress toward your goals?" },
+  { id: "actionability", prompt: "How clear are your next steps after this meeting?" },
+  { id: "necessity", prompt: "How necessary was this meeting for you?" }
 ];
 
 const ratings = [1, 2, 3, 4, 5] as const;
@@ -17,7 +17,7 @@ const round2 = (value: number) => Math.round((value + Number.EPSILON) * 100) / 1
 
 export function calculateReport(meeting: Meeting, responses: AnonymousResponse[]): CompleteReport {
   const total = responses.reduce(
-    (sum, response) => sum + response.usefulness + response.actionability + response.reInvite,
+    (sum, response) => sum + response.usefulness + response.actionability + response.necessity,
     0
   );
 

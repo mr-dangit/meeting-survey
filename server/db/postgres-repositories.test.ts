@@ -29,7 +29,7 @@ function responseFixture(meetingId: string): AnonymousResponse {
     meetingId,
     usefulness: 4,
     actionability: 5,
-    reInvite: 3,
+    necessity: 3,
     comment: "End with a decision recap.",
     submittedAt: new Date("2026-08-18T08:30:00.000Z")
   };
@@ -77,7 +77,7 @@ describe("PostgreSQL repositories", () => {
       "comment",
       "id",
       "meeting_id",
-      "re_invite",
+      "necessity",
       "submitted_at",
       "usefulness"
     ]);
@@ -110,6 +110,6 @@ describe("PostgreSQL repositories", () => {
     await runMigrations(pool);
 
     const result = await pool.query<{ version: number }>("select version from schema_migrations order by version");
-    expect(result.rows).toEqual([{ version: 1 }, { version: 2 }]);
+    expect(result.rows).toEqual([{ version: 1 }, { version: 2 }, { version: 3 }]);
   });
 });

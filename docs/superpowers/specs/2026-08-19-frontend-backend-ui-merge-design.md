@@ -51,7 +51,7 @@ The historical meeting-series dashboard may remain available as an explicitly la
 - Keep existing routing, validation, API, route, repository, and full-flow tests passing.
 - Run the production client/server build.
 - Run a local browser smoke check covering the admin shell, survey form, report threshold/complete states, and responsive layout.
-- Deploy the verified build to the linked Vercel production project and verify the production root, `/api/health`, and live same-origin API routing.
+- Serve the verified build from the single Fastify process and verify the root, `/api/health`, and live same-origin API routing.
 
 ## Non-goals
 

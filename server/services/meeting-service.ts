@@ -77,4 +77,10 @@ export class MeetingService {
     const meeting = await this.meetings.setStatus(id, status, new Date());
     return meeting ? toAdminMeeting(meeting) : null;
   }
+
+  // Irreversible: the meeting's responses cascade away with it, and its access secrets stop
+  // resolving, so both the survey and the chair report links go dead.
+  async delete(id: string): Promise<boolean> {
+    return this.meetings.delete(id);
+  }
 }

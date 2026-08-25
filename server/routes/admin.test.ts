@@ -4,6 +4,7 @@ import { createTestDatabase } from "../testing/database.js";
 
 const config = {
   nodeEnv: "test" as const,
+  host: "127.0.0.1",
   port: 3001,
   databaseUrl: "postgresql://unused"
 };
@@ -51,6 +52,88 @@ describe("administrator routes", () => {
     expect(stored.reportSecretHash).not.toBe(body.reportAccess);
     expect(stored.surveySecret).toBe(body.surveyAccess);
     expect(stored.reportSecret).toBe(body.reportAccess);
+  });
+
+  describe("deleting a meeting", () => {
+    it("removes the meeting, its responses, and its access links", async () => {
+      const created = await createMeeting();
+      const { meeting, surveyAccess, reportAccess } = created.json();
+      await app.inject({
+        method: "POST",
+        url: "/api/survey/responses",
+        headers: { "x-survey-access": surveyAccess },
+        payload: { usefulness: 4, actionability: 4, necessity: 4, comment: "Worth keeping." }
+      });
+      expect(await repositories.responses.listForMeeting(meeting.id)).toHaveLength(1);
+
+      const deleted = await app.inject({ method: "DELETE", url: `/api/admin/meetings/${meeting.id}` });
+
+      expect(deleted.statusCode).toBe(204);
+      expect(await repositories.meetings.list()).toEqual([]);
+      // The responses foreign key cascades, so the feedback goes with the meeting.
+      expect(await repositories.responses.listForMeeting(meeting.id)).toEqual([]);
+      // Both secret links stop resolving.
+      const survey = await app.inject({
+        method: "GET",
+        url: "/api/survey",
+        headers: { "x-survey-access": surveyAccess }
+      });
+      const report = await app.inject({
+        method: "GET",
+        url: "/api/report",
+        headers: { "x-report-access": reportAccess }
+      });
+      expect(survey.statusCode).toBe(404);
+      expect(report.statusCode).toBe(404);
+    });
+
+    it("leaves other meetings untouched", async () => {
+      const kept = (await createMeeting({ title: "Keep me" })).json();
+      const doomed = (await createMeeting({ title: "Delete me" })).json();
+
+      const deleted = await app.inject({
+        method: "DELETE",
+        url: `/api/admin/meetings/${doomed.meeting.id}`
+      });
+
+      expect(deleted.statusCode).toBe(204);
+      const remaining = await repositories.meetings.list();
+      expect(remaining).toHaveLength(1);
+      expect(remaining[0].id).toBe(kept.meeting.id);
+    });
+
+    it("answers 404 for a meeting that does not exist", async () => {
+      const deleted = await app.inject({
+        method: "DELETE",
+        url: "/api/admin/meetings/20000000-0000-4000-8000-000000000001"
+      });
+
+      expect(deleted.statusCode).toBe(404);
+      expect(deleted.json()).toEqual({ error: "Meeting not found." });
+    });
+
+    // The browser's fetch wrapper used to label every request as JSON, body or not. Fastify's
+    // default parser answered a bodyless DELETE with 400 FST_ERR_CTP_EMPTY_JSON_BODY, so the
+    // button reported "Bad Request" while every test that skipped the header passed.
+    it("deletes when the request declares a JSON content-type but sends no body", async () => {
+      const { meeting } = (await createMeeting()).json();
+
+      const deleted = await app.inject({
+        method: "DELETE",
+        url: `/api/admin/meetings/${meeting.id}`,
+        headers: { "content-type": "application/json" }
+      });
+
+      expect(deleted.statusCode).toBe(204);
+      expect(await repositories.meetings.list()).toEqual([]);
+    });
+
+    it("rejects a malformed meeting reference", async () => {
+      const deleted = await app.inject({ method: "DELETE", url: "/api/admin/meetings/not-a-uuid" });
+
+      expect(deleted.statusCode).toBe(400);
+      expect(deleted.json()).toEqual({ error: "Check the meeting reference and try again." });
+    });
   });
 
   it("no longer exposes an administrator session endpoint", async () => {

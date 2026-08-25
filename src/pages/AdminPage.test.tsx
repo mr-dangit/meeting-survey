@@ -1,11 +1,12 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AdminPage } from "./AdminPage";
-import { createMeeting, getMeetingAccess, listMeetings, setMeetingStatus } from "../api";
+import { createMeeting, deleteMeeting, getMeetingAccess, listMeetings, setMeetingStatus } from "../api";
 
 vi.mock("../api", () => ({
   ApiError: class ApiError extends Error {},
   createMeeting: vi.fn(),
+  deleteMeeting: vi.fn(),
   getMeetingAccess: vi.fn(),
   listMeetings: vi.fn(),
   setMeetingStatus: vi.fn()
@@ -94,6 +95,47 @@ describe("AdminPage", () => {
 
     expect(getMeetingAccess).not.toHaveBeenCalled();
     expect(await screen.findByRole("alert")).toHaveTextContent(/cannot be shown/i);
+  });
+
+  it("deletes a meeting only after the inline confirmation is accepted", async () => {
+    vi.mocked(listMeetings).mockResolvedValue([meeting]);
+    vi.mocked(deleteMeeting).mockResolvedValue(undefined);
+    render(<AdminPage />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Delete" }));
+
+    // Arming the confirmation must not delete anything on its own.
+    expect(deleteMeeting).not.toHaveBeenCalled();
+    expect(screen.getByText(/cannot be undone/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /delete permanently/i }));
+
+    await waitFor(() => expect(deleteMeeting).toHaveBeenCalledWith("m1"));
+    expect(await screen.findByText(/no meetings yet/i)).toBeInTheDocument();
+  });
+
+  it("keeps the meeting when the confirmation is dismissed", async () => {
+    vi.mocked(listMeetings).mockResolvedValue([meeting]);
+    render(<AdminPage />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Delete" }));
+    fireEvent.click(screen.getByRole("button", { name: /keep meeting/i }));
+
+    expect(deleteMeeting).not.toHaveBeenCalled();
+    expect(screen.getByText("Investment Committee")).toBeInTheDocument();
+    expect(screen.queryByText(/cannot be undone/i)).not.toBeInTheDocument();
+  });
+
+  it("keeps the meeting listed when deleting fails", async () => {
+    vi.mocked(listMeetings).mockResolvedValue([meeting]);
+    vi.mocked(deleteMeeting).mockRejectedValue(new Error("network down"));
+    render(<AdminPage />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Delete" }));
+    fireEvent.click(screen.getByRole("button", { name: /delete permanently/i }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(/could not be deleted/i);
+    expect(screen.getByText("Investment Committee")).toBeInTheDocument();
   });
 
   it("surfaces a failure to load the meeting list", async () => {

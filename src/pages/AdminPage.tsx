@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { ApiError, createMeeting, getMeetingAccess, listMeetings, setMeetingStatus } from "../api";
+import { ApiError, createMeeting, deleteMeeting, getMeetingAccess, listMeetings, setMeetingStatus } from "../api";
 import type { AdminMeeting, MeetingAccess } from "../types";
 
 export function AdminPage() {
@@ -12,6 +12,13 @@ export function AdminPage() {
   const [access, setAccess] = useState<Record<string, MeetingAccess>>({});
   const [accessError, setAccessError] = useState<Record<string, string>>({});
   const [loadingAccessId, setLoadingAccessId] = useState("");
+  // Deleting discards the meeting's responses along with it, so the button arms an inline
+  // confirmation on the row instead of acting on the first click.
+  const [confirmDeleteId, setConfirmDeleteId] = useState("");
+  const [deletingId, setDeletingId] = useState("");
+  // Kept per row: the form error at the top of the page is out of sight when the list is
+  // scrolled, so a failed delete has to report itself next to the button that was pressed.
+  const [deleteError, setDeleteError] = useState<Record<string, string>>({});
 
   useEffect(() => {
     let active = true;
@@ -65,6 +72,44 @@ export function AdminPage() {
       setError(reason instanceof ApiError ? reason.message : "Status could not be saved.");
     } finally {
       setSavingId("");
+    }
+  }
+
+  async function remove(meeting: AdminMeeting) {
+    setDeletingId(meeting.id);
+    setDeleteError((current) => ({ ...current, [meeting.id]: "" }));
+    try {
+      await deleteMeeting(meeting.id);
+      setMeetings((current) => current.filter((item) => item.id !== meeting.id));
+      // Drop the row's cached secrets and any expanded panel too, so nothing survives the meeting
+      // it belonged to.
+      setAccess((current) => {
+        const next = { ...current };
+        delete next[meeting.id];
+        return next;
+      });
+      setAccessError((current) => {
+        const next = { ...current };
+        delete next[meeting.id];
+        return next;
+      });
+      setConfirmDeleteId("");
+      if (openId === meeting.id) setOpenId("");
+      setError("");
+      setDeleteError((current) => {
+        const next = { ...current };
+        delete next[meeting.id];
+        return next;
+      });
+    } catch (reason) {
+      setDeleteError((current) => ({
+        ...current,
+        [meeting.id]: reason instanceof ApiError
+          ? `Meeting could not be deleted: ${reason.message}`
+          : "Meeting could not be deleted. The server did not answer."
+      }));
+    } finally {
+      setDeletingId("");
     }
   }
 
@@ -131,6 +176,14 @@ export function AdminPage() {
           <span className={`status-pill status-${meeting.status}`}>{meeting.status}</span>
           <button className="secondary-button" type="button" disabled={savingId === meeting.id} onClick={() => void toggle(meeting)}>{meeting.status === "open" ? "Close survey" : "Reopen survey"}</button>
           <button className="secondary-button" type="button" aria-expanded={expanded} aria-controls={`access-${meeting.id}`} onClick={() => void revealAccess(meeting)}>{expanded ? "Hide links" : "Show links"}</button>
+          {confirmDeleteId === meeting.id
+            ? <div className="delete-confirm" role="group" aria-label={`Confirm deleting ${meeting.title}`}>
+                <p>Delete this meeting and every response filed against it? Its survey and report links stop working. This cannot be undone.</p>
+                <button className="danger-button" type="button" disabled={deletingId === meeting.id} onClick={() => void remove(meeting)}>{deletingId === meeting.id ? "Deleting…" : "Delete permanently"}</button>
+                <button className="text-button" type="button" onClick={() => setConfirmDeleteId("")}>Keep meeting</button>
+                {deleteError[meeting.id] ? <p role="alert" className="form-error delete-error">{deleteError[meeting.id]}</p> : null}
+              </div>
+            : <button className="text-button danger-text" type="button" onClick={() => setConfirmDeleteId(meeting.id)}>Delete</button>}
           {expanded ? <div className="meeting-access" id={`access-${meeting.id}`}>
             <p className="eyebrow">Secret access links</p>
             {loadingAccessId === meeting.id ? <p className="empty-state">Loading access links…</p> : null}

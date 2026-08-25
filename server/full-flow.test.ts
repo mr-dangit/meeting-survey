@@ -7,6 +7,7 @@ import { createTestDatabase } from "./testing/database.js";
 
 const config = {
   nodeEnv: "test" as const,
+  host: "127.0.0.1",
   port: 3001,
   databaseUrl: "postgresql://unused"
 };
@@ -46,9 +47,9 @@ describe("complete meeting feedback flow", () => {
     expect(threshold.json()).toEqual({ status: "threshold_not_met", minimumResponses: 1 });
 
     const answers = [
-      { usefulness: 5, actionability: 4, reInvite: 3, comment: "Shorter pre-read." },
-      { usefulness: 4, actionability: 4, reInvite: 5, comment: "" },
-      { usefulness: 3, actionability: 2, reInvite: 4, comment: "More decision time." }
+      { usefulness: 5, actionability: 4, necessity: 3, comment: "Shorter pre-read." },
+      { usefulness: 4, actionability: 4, necessity: 5, comment: "" },
+      { usefulness: 3, actionability: 2, necessity: 4, comment: "More decision time." }
     ];
     for (const payload of answers) {
       const response = await app.inject({
@@ -91,7 +92,7 @@ describe("complete meeting feedback flow", () => {
           ]
         },
         { id: "actionability", average: 3.33 },
-        { id: "reInvite", average: 4 }
+        { id: "necessity", average: 4 }
       ]
     });
     expect(report.body).not.toMatch(/meetingId|submittedAt|surveySecretHash|reportSecretHash/);
@@ -113,7 +114,7 @@ describe("complete meeting feedback flow", () => {
       "select column_name from information_schema.columns where table_name = 'responses' order by column_name"
     );
     expect(columns.rows.map((row) => row.column_name)).toEqual([
-      "actionability", "comment", "id", "meeting_id", "re_invite", "submitted_at", "usefulness"
+      "actionability", "comment", "id", "meeting_id", "necessity", "submitted_at", "usefulness"
     ]);
     expect((await database.pool.query("select id from responses")).rowCount).toBe(3);
     expect((await app.inject({ method: "GET", url: "/" })).body).toContain("meeting feedback");

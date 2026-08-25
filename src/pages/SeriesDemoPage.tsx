@@ -1,7 +1,7 @@
 import { seriesOccurrences } from "../data";
 import type { RatingQuestionId } from "../types";
 
-const ratingQuestionIds: RatingQuestionId[] = ["usefulness", "actionability", "reInvite"];
+const ratingQuestionIds: RatingQuestionId[] = ["usefulness", "actionability", "necessity"];
 
 export function SeriesDemoPage() {
   const latest = seriesOccurrences[seriesOccurrences.length - 1];
@@ -9,9 +9,9 @@ export function SeriesDemoPage() {
   const recent = seriesOccurrences.slice(-3);
   const rollingAverage = recent.reduce((sum, meeting) => sum + meeting.valueScore, 0) / recent.length;
   const questionLabels: Record<RatingQuestionId, string> = {
-    usefulness: "Useful and relevant",
-    actionability: "Clear next actions",
-    reInvite: "Would attend again"
+    usefulness: "Progress toward goals",
+    actionability: "Clarity of next steps",
+    necessity: "Meeting was necessary"
   };
 
   return <main className="content-wrap series-layout" aria-labelledby="series-heading">

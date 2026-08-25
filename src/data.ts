@@ -3,18 +3,18 @@ import type { MeetingQuestion, ReportData, SeriesOccurrence } from "./types";
 export const meetingQuestions: MeetingQuestion[] = [
   {
     id: "usefulness",
-    prompt: "How useful was this meeting in helping you achieve your goals?",
-    helper: "Think about the clarity, relevance, and value of the discussion."
+    prompt: "To what extent did this meeting help you make progress toward your goals?",
+    helper: "Think about the progress the discussion actually moved forward."
   },
   {
     id: "actionability",
-    prompt: "Did you leave with actionable ideas or clear follow-up tasks?",
-    helper: "Consider whether the next steps felt concrete and easy to act on."
+    prompt: "How clear are your next steps after this meeting?",
+    helper: "Consider whether you know what to do next, and by when."
   },
   {
-    id: "reInvite",
-    prompt: "Would you want to be invited to this meeting again?",
-    helper: "Your answer helps the chair shape the right attendee list."
+    id: "necessity",
+    prompt: "How necessary was this meeting for you?",
+    helper: "Could this have been an update instead of a meeting?"
   }
 ];
 
@@ -51,7 +51,7 @@ export const reportData: ReportData = {
       ]
     },
     {
-      id: "reInvite",
+      id: "necessity",
       prompt: meetingQuestions[2].prompt,
       average: 4.3,
       distribution: [
@@ -71,10 +71,10 @@ export const reportData: ReportData = {
 };
 
 export const seriesOccurrences: SeriesOccurrence[] = [
-  { id: "2026-03-11", dateLabel: "11 March 2026", shortDate: "11 Mar", chair: "Amelia Tan", valueScore: 3.7, respondents: 18, invitees: 30, responseRate: 60, questions: { usefulness: 3.8, actionability: 3.5, reInvite: 3.9 } },
-  { id: "2026-04-08", dateLabel: "8 April 2026", shortDate: "8 Apr", chair: "Amelia Tan", valueScore: 3.9, respondents: 21, invitees: 30, responseRate: 70, questions: { usefulness: 3.9, actionability: 3.7, reInvite: 4.1 } },
-  { id: "2026-05-13", dateLabel: "13 May 2026", shortDate: "13 May", chair: "Amelia Tan", valueScore: 4.0, respondents: 22, invitees: 31, responseRate: 71, questions: { usefulness: 4.0, actionability: 3.8, reInvite: 4.2 } },
-  { id: "2026-06-10", dateLabel: "10 June 2026", shortDate: "10 Jun", chair: "Amelia Tan", valueScore: 4.1, respondents: 23, invitees: 31, responseRate: 74, questions: { usefulness: 4.1, actionability: 3.9, reInvite: 4.3 } },
-  { id: "2026-07-08", dateLabel: "8 July 2026", shortDate: "8 Jul", chair: "Amelia Tan", valueScore: 4.0, respondents: 22, invitees: 30, responseRate: 73, questions: { usefulness: 3.9, actionability: 3.9, reInvite: 4.2 } },
-  { id: "2026-08-12", dateLabel: "12 August 2026", shortDate: "12 Aug", chair: "Amelia Tan", valueScore: 4.2, respondents: 24, invitees: 31, responseRate: 77, questions: { usefulness: 4.0, actionability: 4.1, reInvite: 4.5 } }
+  { id: "2026-03-11", dateLabel: "11 March 2026", shortDate: "11 Mar", chair: "Amelia Tan", valueScore: 3.7, respondents: 18, invitees: 30, responseRate: 60, questions: { usefulness: 3.8, actionability: 3.5, necessity: 3.9 } },
+  { id: "2026-04-08", dateLabel: "8 April 2026", shortDate: "8 Apr", chair: "Amelia Tan", valueScore: 3.9, respondents: 21, invitees: 30, responseRate: 70, questions: { usefulness: 3.9, actionability: 3.7, necessity: 4.1 } },
+  { id: "2026-05-13", dateLabel: "13 May 2026", shortDate: "13 May", chair: "Amelia Tan", valueScore: 4.0, respondents: 22, invitees: 31, responseRate: 71, questions: { usefulness: 4.0, actionability: 3.8, necessity: 4.2 } },
+  { id: "2026-06-10", dateLabel: "10 June 2026", shortDate: "10 Jun", chair: "Amelia Tan", valueScore: 4.1, respondents: 23, invitees: 31, responseRate: 74, questions: { usefulness: 4.1, actionability: 3.9, necessity: 4.3 } },
+  { id: "2026-07-08", dateLabel: "8 July 2026", shortDate: "8 Jul", chair: "Amelia Tan", valueScore: 4.0, respondents: 22, invitees: 30, responseRate: 73, questions: { usefulness: 3.9, actionability: 3.9, necessity: 4.2 } },
+  { id: "2026-08-12", dateLabel: "12 August 2026", shortDate: "12 Aug", chair: "Amelia Tan", valueScore: 4.2, respondents: 24, invitees: 31, responseRate: 77, questions: { usefulness: 4.0, actionability: 4.1, necessity: 4.5 } }
 ];

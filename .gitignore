@@ -4,6 +4,6 @@ coverage/
 .worktrees/
 *.tsbuildinfo
 .DS_Store
-.vercel
 .env*
 !.env.example
+sharing/

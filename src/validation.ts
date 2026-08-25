@@ -8,7 +8,7 @@ export function validateSurvey(answers: SurveyAnswers): ValidationErrors {
   const requiredQuestions: RatingQuestionId[] = [
     "usefulness",
     "actionability",
-    "reInvite"
+    "necessity"
   ];
 
   requiredQuestions.forEach((questionId) => {

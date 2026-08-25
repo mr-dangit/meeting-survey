@@ -10,7 +10,7 @@ async function start() {
   const app = await buildRuntime(config, pool, path.resolve(process.cwd(), "dist/client"));
   app.addHook("onClose", async () => pool.end());
 
-  await app.listen({ host: "0.0.0.0", port: config.port });
+  await app.listen({ host: config.host, port: config.port });
 }
 
 void start().catch((error) => {

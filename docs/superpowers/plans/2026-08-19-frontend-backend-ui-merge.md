@@ -6,7 +6,7 @@
 
 **Architecture:** Keep `App` as the hash-route composition root and keep `src/api.ts` as the only browser-to-backend boundary. Rebuild each live page around the original Dymon visual structure, map live API responses directly into those structures, and keep the historical series dashboard isolated behind an explicit demo-only hash route.
 
-**Tech Stack:** React 18, TypeScript, Vite, Vitest, Testing Library, Fastify API, Supabase Postgres, Vercel.
+**Tech Stack:** React 18, TypeScript, Vite, Vitest, Testing Library, Fastify API, Supabase Postgres.
 
 **Spec:** `docs/superpowers/specs/2026-08-19-frontend-backend-ui-merge-design.md`
 
@@ -441,7 +441,7 @@ git commit -m "feat: preserve historical series demo view"
 - Modify only if verification finds a real frontend issue: the affected frontend file and its test.
 
 **Interfaces:**
-- Consumes: all live pages, route tests, backend API contracts, and Vercel project configuration.
+- Consumes: all live pages, route tests, and backend API contracts.
 - Produces: a verified production deployment with the restored frontend and unchanged backend behavior.
 
 - [ ] **Step 1: Run the complete automated test suite in the stable Windows worker mode**
@@ -474,22 +474,22 @@ $nodeDir='C:\Users\sg.bizdev.intern\.cache\codex-runtimes\codex-primary-runtime\
 
 Verify the client shell at `http://127.0.0.1:5173/#/admin`, the series demo at `http://127.0.0.1:5173/#/series-demo`, and a mocked/live test fixture for the survey and report layouts. Check desktop and a 390px-wide viewport for overflow, focus rings, star ratings, metric cards, distribution bars, and the meeting table.
 
-- [ ] **Step 4: Deploy the verified local build to the linked production project**
+- [ ] **Step 4: Serve the verified build from the single Fastify process**
 
-Deploy without printing secrets:
+Start the built app the way it is actually hosted, with the client served by Fastify rather than Vite:
 
 ```text
-$nodeDir='C:\Users\sg.bizdev.intern\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin'; $env:Path="$nodeDir;$env:Path"; pnpm dlx vercel@latest --prod --yes
+$env:HOST='127.0.0.1'; $env:PORT='3001'; & "$env:LOCALAPPDATA\Programs\node-v22.23.2-win-x64\node.exe" --env-file=.env.local dist\server\index.js
 ```
 
-Expected: a `READY` production deployment aliased to `https://meeting-survey-eight.vercel.app` with the API function in `bom1`.
+Expected: the process stays up and serves both `dist/client` and `/api` on port 3001.
 
-- [ ] **Step 5: Verify production routing and restored client assets**
+- [ ] **Step 5: Verify same-origin routing and restored client assets**
 
-Run a read-only smoke check against the production alias:
+Run a read-only smoke check against the running process:
 
 ```text
-$base='https://meeting-survey-eight.vercel.app'; $health=Invoke-WebRequest -UseBasicParsing "$base/api/health"; $root=Invoke-WebRequest -UseBasicParsing "$base/"; if($health.StatusCode -ne 200 -or $health.Content -notmatch '"status":"ok"'){ throw 'Health check failed' }; if($root.StatusCode -ne 200){ throw 'Client shell failed' }; "HEALTH $($health.StatusCode) $($health.Content)"; "ROOT $($root.StatusCode)"
+$base='http://127.0.0.1:3001'; $health=Invoke-WebRequest -UseBasicParsing "$base/api/health"; $root=Invoke-WebRequest -UseBasicParsing "$base/"; if($health.StatusCode -ne 200 -or $health.Content -notmatch '"status":"ok"'){ throw 'Health check failed' }; if($root.StatusCode -ne 200){ throw 'Client shell failed' }; "HEALTH $($health.StatusCode) $($health.Content)"; "ROOT $($root.StatusCode)"
 ```
 
 Also confirm the HTML references a built `/assets/index-*.css` file and that the CSS contains the restored visual marker `.report-overview` plus `--numeric-font`.

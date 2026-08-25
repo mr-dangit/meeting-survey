@@ -1,9 +1,9 @@
-export type RatingQuestionId = "usefulness" | "actionability" | "reInvite";
+export type RatingQuestionId = "usefulness" | "actionability" | "necessity";
 
 export type SurveyAnswers = {
   usefulness: number | null;
   actionability: number | null;
-  reInvite: number | null;
+  necessity: number | null;
   comment: string;
 };
 
@@ -58,6 +58,9 @@ export type AdminMeeting = {
   hasAccessLinks: boolean;
 };
 export type MeetingAccess = { surveyAccess: string; reportAccess: string };
+// Returned by both the first submission and any later revision, so the page can revise the row it
+// already filed rather than filing another one.
+export type RecordedResponse = { status: "recorded"; responseId: string };
 export type CreateMeetingInput = Omit<AdminMeeting, "id" | "status" | "hasAccessLinks">;
 export type SurveyContext = Pick<AdminMeeting, "id" | "title" | "chairLabel" | "meetingAt" | "status">;
 export type CompleteReportView = {
